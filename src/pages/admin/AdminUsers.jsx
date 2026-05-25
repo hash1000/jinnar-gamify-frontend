@@ -17,30 +17,59 @@ const AdminUsers = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [filter, setFilter] = useState('all'); // all, pending, approved, suspended
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (debouncedSearchTerm !== searchTerm) {
+                setDebouncedSearchTerm(searchTerm);
+                setPage(1); // Reset to first page on new search
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm, debouncedSearchTerm]);
 
     useEffect(() => {
         loadUsers();
-    }, []);
+    }, [page, filter, debouncedSearchTerm]);
 
     const loadUsers = async () => {
         try {
             setLoading(true);
-            const response = await adminService.getUsers();
+            
+            // Build query params for the backend
+            const params = {
+                search: debouncedSearchTerm || undefined,
+                page,
+                limit: 10,
+            };
+            
+            if (filter === 'suspended') {
+                params.isSuspended = true;
+            } else if (filter !== 'all') {
+                params.status = filter;
+            }
+
+            const response = await adminService.getUsers(params);
 
             // Extract users from various possible structures
             let usersList = [];
             if (response && response.users) {
                 usersList = response.users;
+                if (response.totalPages) setTotalPages(response.totalPages);
             } else if (response && response.data) {
                 usersList = Array.isArray(response.data) ? response.data : (response.data.users || []);
+                if (response.data.totalPages) setTotalPages(response.data.totalPages);
+                else if (response.totalPages) setTotalPages(response.totalPages);
             } else if (Array.isArray(response)) {
                 usersList = response;
             }
 
             if (usersList.length > 0) {
-                // Map API fields to our internal format if necessary, 
-                // but better to just update the JSX to use real fields
                 setUsers(usersList);
             } else {
                 // Mocking if endpoint returns empty during setup
@@ -78,18 +107,7 @@ const AdminUsers = () => {
         }
     };
 
-    const filteredUsers = users.filter(user => {
-        const name = user.name || '';
-        const email = user.email || user.mobileNumber || '';
-        const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            email.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const status = user.verification?.status || 'none';
-        const matchesFilter = filter === 'all' ||
-            (filter === 'suspended' && user.isSuspended) ||
-            (filter === status && !user.isSuspended);
-        return matchesSearch && matchesFilter;
-    });
 
     return (
         <div className="min-h-screen bg-gray-50 p-6 md:p-8">
@@ -113,7 +131,10 @@ const AdminUsers = () => {
                         </div>
                         <select
                             value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
+                            onChange={(e) => {
+                                setFilter(e.target.value);
+                                setPage(1); // Reset to first page on filter change
+                            }}
                             className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-gray-700"
                         >
                             <option value="all">All Users</option>
@@ -144,13 +165,13 @@ const AdminUsers = () => {
                                         <td className="px-6 py-4"><div className="h-4 bg-gray-100 rounded w-20 float-right"></div></td>
                                     </tr>
                                 ))
-                            ) : filteredUsers.length === 0 ? (
+                            ) : users.length === 0 ? (
                                 <tr>
                                     <td colSpan="4" className="px-6 py-12 text-center text-gray-500 italic">
                                         No users found matching your criteria
                                     </td>
                                 </tr>
-                            ) : filteredUsers.map(user => (
+                            ) : users.map(user => (
                                 <tr key={user._id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -217,6 +238,29 @@ const AdminUsers = () => {
                             ))}
                         </tbody>
                     </table>
+
+                    {/* Pagination Controls */}
+                    <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-white">
+                        <span className="text-sm text-gray-500 font-medium">
+                            Page {page} {totalPages > 1 ? `of ${totalPages}` : ''}
+                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => setPage(p => p + 1)}
+                                disabled={(totalPages > 1 && page >= totalPages) || users.length < 10}
+                                className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

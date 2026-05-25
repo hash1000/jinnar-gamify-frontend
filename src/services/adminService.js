@@ -151,16 +151,17 @@ const adminService = {
     // ==================== ANNOUNCEMENTS ====================
 
     /**
-     * Get all announcements (admin)
+     * Get all announcements (admin) with optional filters
+     * @param {{ category?: string, isActive?: boolean }} filters
      */
-    getAnnouncements: async () => {
-        const response = await apiClient.get('/viral/admin/announcements');
+    getAnnouncements: async (filters = {}) => {
+        const response = await apiClient.get('/viral/admin/announcements', { params: filters });
         return response.data;
     },
 
     /**
      * Create a new announcement
-     * @param {{ title, content, category, date }} data
+     * @param {{ title, message, category, publishAt?, drawId?, isActive? }} data
      */
     createAnnouncement: async (data) => {
         const response = await apiClient.post('/viral/admin/announcements', data);
@@ -170,7 +171,7 @@ const adminService = {
     /**
      * Update an existing announcement
      * @param {string} announcementId
-     * @param {{ title, content, category, date }} data
+     * @param {{ title?, message?, category?, publishAt?, drawId?, isActive? }} data
      */
     updateAnnouncement: async (announcementId, data) => {
         const response = await apiClient.put(`/viral/admin/announcements/${announcementId}`, data);
@@ -178,7 +179,7 @@ const adminService = {
     },
 
     /**
-     * Delete an announcement
+     * Soft delete an announcement
      * @param {string} announcementId
      */
     deleteAnnouncement: async (announcementId) => {
@@ -211,8 +212,8 @@ const adminService = {
         return response.data;
     },
 
-    getUsers: async () => {
-        const response = await apiClient.get('/admin/users');
+    getUsers: async (params = {}) => {
+        const response = await apiClient.get('/admin/users', { params });
         return response.data;
     },
 

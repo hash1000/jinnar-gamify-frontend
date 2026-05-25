@@ -26,6 +26,11 @@ const UploadVideo = () => {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
 
+    // Eager video upload state
+    const [fileUploading, setFileUploading] = useState(false);
+    const [fileUploadProgress, setFileUploadProgress] = useState(0);
+    const [uploadedVideoUrl, setUploadedVideoUrl] = useState(null); // URL returned from /upload/viral-video
+
     // Fetch active draws on mount
     useEffect(() => {
         const fetchDraws = async () => {
@@ -102,8 +107,46 @@ const UploadVideo = () => {
             return;
         }
         setUploadedFile(file);
+        setUploadedVideoUrl(null); // reset any previous upload
         if (!videoTitle) {
             setVideoTitle(file.name.replace(/\.[^/.]+$/, ''));
+        }
+
+        // ✅ Eagerly upload the file right away via POST /upload/viral-video
+        try {
+            setFileUploading(true);
+            setFileUploadProgress(0);
+            const uploadRes = await viralService.uploadViralVideo(
+                file,
+                (pct) => setFileUploadProgress(pct)
+            );
+            const url =
+                uploadRes?.file?.url ||          // ✅ actual API shape: { file: { url } }
+                uploadRes?.url ||                 // fallback: { url }
+                uploadRes?.data?.url ||           // fallback: { data: { url } }
+                uploadRes?.videoUrl ||            // fallback: { videoUrl }
+                uploadRes?.data?.videoUrl ||      // fallback: { data: { videoUrl } }
+                uploadRes?.data?.file?.url;       // fallback: { data: { file: { url } } }
+            if (url) {
+                // VITE_API_URL = https://api.jinnar.com/api
+                // file url = /api/files/viralVideos/xxx
+                // strip trailing /api from base, then append the relative path
+                const apiBase = import.meta.env.VITE_API_URL || '';
+                const serverRoot = apiBase.replace(/\/api$/, ''); // → https://api.jinnar.com
+                const fullUrl = url.startsWith('http') ? url : `${serverRoot}${url}`;
+                console.log('📹 Video server URL:', fullUrl);
+                setUploadedVideoUrl(fullUrl);
+                toast.success('Video uploaded! Fill in the details and submit.');
+            } else {
+                toast.error('Upload succeeded but no URL was returned. Please try again.');
+            }
+        } catch (err) {
+            console.error('Video upload failed:', err);
+            const msg = err?.response?.data?.message || err?.response?.data?.error || 'Failed to upload video. Please try again.';
+            toast.error(msg);
+            setUploadedFile(null);
+        } finally {
+            setFileUploading(false);
         }
     };
 
@@ -125,8 +168,21 @@ const UploadVideo = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!liveLinkUrl || !selectedDraw || !agreedToTerms || !videoTitle) {
-            toast.warning('Please fill in all required fields');
+        // Need at least a video file OR a live link
+        if (!uploadedFile && !liveLinkUrl) {
+            toast.warning('Please provide a video file or a live link URL.');
+            return;
+        }
+        if (!selectedDraw) {
+            toast.warning('Please select an active draw.');
+            return;
+        }
+        if (!videoTitle) {
+            toast.warning('Please enter a video title.');
+            return;
+        }
+        if (!agreedToTerms) {
+            toast.warning('Please agree to the terms before submitting.');
             return;
         }
 
@@ -134,17 +190,19 @@ const UploadVideo = () => {
         setUploadProgress(0);
 
         try {
-            // Upload video
+            // File was already uploaded eagerly — just use the stored URL
             const response = await viralService.createSubmission({
                 drawId: selectedDraw,
                 title: videoTitle,
-                liveLinkUrl: liveLinkUrl,
+                liveLinkUrl: liveLinkUrl || undefined,
                 platform: platform,
-                videoFile: uploadedFile || undefined
+                ...(uploadedVideoUrl ? { videoUrl: uploadedVideoUrl } : {}),
             });
 
+            setUploadProgress(100);
+
             if (response.success) {
-                toast.success('Video submitted successfully! It will be reviewed shortly.');
+                toast.success('Submission created successfully! It will be reviewed shortly.');
                 // Reset form
                 setUploadedFile(null);
                 setLiveLinkUrl('');
@@ -159,8 +217,9 @@ const UploadVideo = () => {
                 }, 2000);
             }
         } catch (error) {
-            console.error('Error uploading video:', error);
-            toast.error('Failed to upload video. Please try again.');
+            console.error('Error submitting:', error);
+            const msg = error?.response?.data?.message || error?.response?.data?.error || 'Failed to submit. Please try again.';
+            toast.error(msg);
         } finally {
             setUploading(false);
             setUploadProgress(0);
@@ -346,51 +405,82 @@ const UploadVideo = () => {
                                                         </p>
                                                     </div>
                                                 ) : (
-                                                    <div className="border-2 border-green-500 bg-green-50 rounded-xl p-6">
+                                                    <div className={`border-2 rounded-xl p-6 transition-all ${
+                                                        fileUploading ? 'border-blue-400 bg-blue-50' :
+                                                        uploadedVideoUrl ? 'border-green-500 bg-green-50' :
+                                                        'border-red-400 bg-red-50'
+                                                    }`}>
                                                         <div className="flex items-center justify-between flex-wrap gap-4">
                                                             <div className="flex items-center gap-4">
-                                                                <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                                                    </svg>
+                                                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                                                    fileUploading ? 'bg-blue-500' :
+                                                                    uploadedVideoUrl ? 'bg-green-500' : 'bg-red-400'
+                                                                }`}>
+                                                                    {fileUploading ? (
+                                                                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                                    ) : (
+                                                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                                        </svg>
+                                                                    )}
                                                                 </div>
                                                                 <div>
                                                                     <h3 className="font-bold text-gray-900">{uploadedFile.name}</h3>
                                                                     <p className="text-sm text-gray-600">
                                                                         {(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB
+                                                                        {fileUploading && <span className="ml-2 text-blue-600 font-semibold">· Uploading to server... {fileUploadProgress}%</span>}
+                                                                        {!fileUploading && uploadedVideoUrl && <span className="ml-2 text-green-600 font-semibold">· ✓ Uploaded successfully</span>}
+                                                                        {!fileUploading && !uploadedVideoUrl && <span className="ml-2 text-red-600 font-semibold">· Upload failed — try again</span>}
                                                                     </p>
                                                                 </div>
                                                             </div>
                                                             <button
                                                                 type="button"
-                                                                onClick={() => setUploadedFile(null)}
-                                                                className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                                                                onClick={() => { setUploadedFile(null); setUploadedVideoUrl(null); setFileUploadProgress(0); }}
+                                                                disabled={fileUploading}
+                                                                className="p-2 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-40"
                                                             >
                                                                 <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                                 </svg>
                                                             </button>
                                                         </div>
+
+                                                        {/* Progress bar */}
+                                                        {fileUploading && (
+                                                            <div className="mt-4">
+                                                                <div className="w-full bg-blue-200 rounded-full h-2">
+                                                                    <div
+                                                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                                                        style={{ width: `${fileUploadProgress}%` }}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        )}
+
                                                         <button
                                                             type="button"
                                                             onClick={() => setShowPreview(!showPreview)}
-                                                            className="mt-4 w-full py-2 bg-white border border-gray-300 rounded-lg font-medium hover:bg-gray-50 flex items-center justify-center gap-2 transition-colors"
+                                                            disabled={fileUploading}
+                                                            className="mt-4 w-full py-2 bg-white border border-gray-300 rounded-lg font-medium hover:bg-gray-50 flex items-center justify-center gap-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                                         >
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                             </svg>
                                                             {showPreview ? 'Hide Preview' : 'Preview Video'}
+                                                            {uploadedVideoUrl && <span className="text-xs text-green-600 font-semibold">(from server)</span>}
                                                         </button>
                                                         {showPreview && (
                                                             <div className="mt-4 rounded-lg overflow-hidden bg-black border border-gray-200">
-                                                                <video 
-                                                                    src={URL.createObjectURL(uploadedFile)} 
-                                                                    controls 
+                                                                <video
+                                                                    src={uploadedVideoUrl || URL.createObjectURL(uploadedFile)}
+                                                                    controls
                                                                     className="w-full max-h-80 object-contain"
                                                                 >
                                                                     Your browser does not support the video tag.
                                                                 </video>
+
                                                             </div>
                                                         )}
                                                     </div>
@@ -499,13 +589,13 @@ const UploadVideo = () => {
                                     {/* Submit Button */}
                                     <button
                                         type="submit"
-                                        disabled={!liveLinkUrl || !selectedDraw || !agreedToTerms || uploading || !videoTitle}
+                                        disabled={(!uploadedFile && !liveLinkUrl) || !selectedDraw || !agreedToTerms || uploading || !videoTitle}
                                         className="w-full py-4 bg-blue-800 text-white rounded-xl font-bold text-lg hover:bg-blue-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                                     >
                                         {uploading
-                                            ? 'Uploading... Please wait'
-                                            : !liveLinkUrl
-                                                ? 'Please Provide a Video Link'
+                                            ? `Uploading... ${uploadProgress}%`
+                                            : (!uploadedFile && !liveLinkUrl)
+                                                ? 'Provide a Video File or Live Link'
                                                 : !selectedDraw
                                                     ? 'Please Select a Draw'
                                                     : !videoTitle

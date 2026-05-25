@@ -28,17 +28,30 @@ const viralService = {
      * @param {File}   [payload.videoFile]  - Optional video file upload
      * @returns {Promise} Created submission object
      */
-    createSubmission: async ({ drawId, title, liveLinkUrl, platform, videoFile }) => {
-        const formData = new FormData();
-        formData.append('drawId', drawId);
-        formData.append('title', title);
-        if (liveLinkUrl) formData.append('liveLinkUrl', liveLinkUrl);
-        if (platform) formData.append('platform', platform);
-        if (videoFile) formData.append('video', videoFile);
+    createSubmission: async ({ drawId, title, liveLinkUrl, platform, videoFile, videoUrl }) => {
+        // If a raw file is passed (legacy), use FormData — otherwise send plain JSON
+        if (videoFile) {
+            const formData = new FormData();
+            formData.append('drawId', drawId);
+            formData.append('title', title);
+            if (liveLinkUrl) formData.append('liveLinkUrl', liveLinkUrl);
+            if (platform) formData.append('platform', platform);
+            formData.append('video', videoFile);
+            const response = await apiClient.post('/viral/submissions', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return response.data;
+        }
 
-        const response = await apiClient.post('/viral/submissions', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        // Standard path: file already uploaded via /upload/viral-video, send JSON
+        const body = {
+            drawId,
+            title,
+            ...(liveLinkUrl ? { liveLinkUrl } : {}),
+            ...(platform ? { platform } : {}),
+            ...(videoUrl ? { videoUrl } : {}),
+        };
+        const response = await apiClient.post('/viral/submissions', body);
         return response.data;
     },
 
@@ -50,6 +63,48 @@ const viralService = {
      */
     uploadVideo: async (videoFile, drawId, title) => {
         return viralService.createSubmission({ drawId, title, videoFile });
+    },
+
+    // ==================== DEDICATED FILE UPLOADS ====================
+
+    /**
+     * Upload a viral video file
+     * POST /upload/viral-video
+     * Form-data field: viral_video (file)
+     * @param {File} file - The video file to upload
+     * @param {Function} [onProgress] - Optional upload progress callback (0-100)
+     * @returns {Promise} { url, ... } — the hosted video URL
+     */
+    uploadViralVideo: async (file, onProgress) => {
+        const formData = new FormData();
+        formData.append('viral_video', file);
+        const response = await apiClient.post('/upload/viral-video', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: onProgress
+                ? (e) => onProgress(Math.round((e.loaded * 100) / e.total))
+                : undefined,
+        });
+        return response.data;
+    },
+
+    /**
+     * Upload a viral image file
+     * POST /upload/viral-image
+     * Form-data field: viral_image (file)
+     * @param {File} file - The image file to upload
+     * @param {Function} [onProgress] - Optional upload progress callback (0-100)
+     * @returns {Promise} { url, ... } — the hosted image URL
+     */
+    uploadViralImage: async (file, onProgress) => {
+        const formData = new FormData();
+        formData.append('viral_image', file);
+        const response = await apiClient.post('/upload/viral-image', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: onProgress
+                ? (e) => onProgress(Math.round((e.loaded * 100) / e.total))
+                : undefined,
+        });
+        return response.data;
     },
 
     /**
@@ -188,9 +243,19 @@ const viralService = {
 
     /**
      * Get platform announcements (public)
+     * @param {{ category?: string, page?: number, limit?: number }} params
      */
-    getAnnouncements: async () => {
-        const response = await apiClient.get('/viral/announcements');
+    getAnnouncements: async (params = {}) => {
+        const response = await apiClient.get('/announcements', { params });
+        return response.data;
+    },
+
+    /**
+     * Get a single public announcement by ID
+     * @param {string} id
+     */
+    getAnnouncementById: async (id) => {
+        const response = await apiClient.get(`/announcements/${id}`);
         return response.data;
     },
 

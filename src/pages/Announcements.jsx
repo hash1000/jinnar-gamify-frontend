@@ -1,129 +1,232 @@
-import React, { useState, useEffect } from 'react';
-import announcementsData from '../data/announcements'; // Fallback data
+import React, { useState, useEffect, useCallback } from 'react';
 import viralService from '../services/viralService';
-import { getCategoryColors } from '../utils/colors';
-import { CalendarIcon, TagIcon, ChevronRightIcon } from '../components/ui/Icons';
-import { formatDate } from '../utils/format';
+import announcementsData from '../data/announcements';
+
+const CATEGORIES = ['All', 'winner', 'draw', 'promotion', 'system'];
+
+const CATEGORY_META = {
+    winner:    { label: 'Winner',    bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200', emoji: '🏆', accent: '#059669' },
+    draw:      { label: 'Draw',      bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200', emoji: '🎯', accent: '#d97706' },
+    promotion: { label: 'Promotion', bg: 'bg-pink-100',   text: 'text-pink-800',   border: 'border-pink-200',   emoji: '🎉', accent: '#db2777' },
+    system:    { label: 'System',    bg: 'bg-gray-100',   text: 'text-gray-700',   border: 'border-gray-200',   emoji: '⚙️', accent: '#6b7280' },
+};
+
+const PAGE_LIMIT = 9;
 
 const Announcements = () => {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [expandedId, setExpandedId] = useState(null);
 
-    // Fetch announcements from API
-    useEffect(() => {
-        const fetchAnnouncements = async () => {
-            try {
-                const response = await viralService.getAnnouncements();
-                if (response.success && response.data.length > 0) {
-                    setAnnouncements(response.data);
-                } else {
-                    // Fallback to static data if API returns empty/fails (for demo/development stability)
-                    console.log('Using static announcement data as fallback');
-                    setAnnouncements(announcementsData);
+    const fetchAnnouncements = useCallback(async () => {
+        try {
+            setLoading(true);
+            const params = { page, limit: PAGE_LIMIT };
+            if (selectedCategory !== 'All') params.category = selectedCategory;
+
+            const response = await viralService.getAnnouncements(params);
+
+            if (response.success && response.data?.length > 0) {
+                setAnnouncements(response.data);
+                if (response.pagination) {
+                    setTotalPages(response.pagination.pages || 1);
                 }
-            } catch (error) {
-                console.error('Error fetching announcements:', error);
-                setAnnouncements(announcementsData); // Fallback on error
-            } finally {
-                setLoading(false);
+            } else {
+                // Fallback to static data for development/demo stability
+                console.log('Using static announcement data as fallback');
+                const filtered = selectedCategory === 'All'
+                    ? announcementsData
+                    : announcementsData.filter(a => a.category === selectedCategory);
+                setAnnouncements(filtered);
+                setTotalPages(1);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching announcements:', error);
+            setAnnouncements(announcementsData);
+            setTotalPages(1);
+        } finally {
+            setLoading(false);
+        }
+    }, [selectedCategory, page]);
 
+    useEffect(() => {
+        setPage(1); // reset page when category changes
+    }, [selectedCategory]);
+
+    useEffect(() => {
         fetchAnnouncements();
-    }, []);
+    }, [fetchAnnouncements]);
 
-    // Extract unique categories from actual data
-    const categories = ['All', ...new Set(announcements.map(item => item.category))];
+    const formatPublishDate = (dateStr) => {
+        if (!dateStr) return null;
+        const d = new Date(dateStr);
+        return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    };
 
-    const filteredAnnouncements = selectedCategory === 'All'
-        ? announcements
-        : announcements.filter(item => item.category === selectedCategory);
+    const getTimeAgo = (dateStr) => {
+        if (!dateStr) return '';
+        const diff = Date.now() - new Date(dateStr).getTime();
+        const minutes = Math.floor(diff / 60000);
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        const days = Math.floor(hours / 24);
+        return `${days}d ago`;
+    };
+
+    const SkeletonCard = () => (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-pulse">
+            <div className="flex items-center gap-2 mb-4">
+                <div className="h-6 w-24 bg-gray-200 rounded-full" />
+                <div className="h-4 w-16 bg-gray-100 rounded" />
+            </div>
+            <div className="h-5 bg-gray-200 rounded w-3/4 mb-3" />
+            <div className="h-4 bg-gray-100 rounded w-full mb-2" />
+            <div className="h-4 bg-gray-100 rounded w-5/6" />
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-50">
 
-            <div className="bg-blue-900 text-white py-12 px-6">
-                <div className="max-w-7xl mx-auto">
-                    <h1 className="text-4xl font-bold mb-4">Announcements & Updates</h1>
-                    <p className="text-blue-200">Stay up to date with the latest news from Jinnar Viral.</p>
+            {/* Hero */}
+            <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 text-white py-16 px-6">
+                <div className="max-w-4xl mx-auto text-center">
+                    <span className="text-5xl mb-4 block">📢</span>
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4">Announcements</h1>
+                    <p className="text-blue-200 text-lg">
+                        Stay up to date with the latest news, draw results, and updates from Jinnar Viral.
+                    </p>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="max-w-7xl mx-auto px-6 py-10">
+
                 {/* Category Filter */}
-                <div className="flex gap-2 overflow-x-auto pb-4 mb-8 scrollbar-hide">
-                    {loading ? (
-                        <div className="w-full flex gap-2">
-                            {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="h-10 w-24 bg-gray-200 rounded-full animate-pulse"></div>
-                            ))}
-                        </div>
-                    ) : (
-                        categories.map(category => (
+                <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide">
+                    {CATEGORIES.map(cat => {
+                        const meta = CATEGORY_META[cat];
+                        const isActive = selectedCategory === cat;
+                        return (
                             <button
-                                key={category}
-                                onClick={() => setSelectedCategory(category)}
-                                className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors ${selectedCategory === category
-                                    ? 'bg-blue-800 text-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                                    }`}
+                                key={cat}
+                                onClick={() => setSelectedCategory(cat)}
+                                className={`px-5 py-2.5 rounded-full whitespace-nowrap font-semibold text-sm transition-all border ${
+                                    isActive
+                                        ? 'bg-blue-800 text-white border-blue-800 shadow-md'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-700'
+                                }`}
                             >
-                                {category}
+                                {meta ? `${meta.emoji} ${meta.label}` : 'All'}
                             </button>
-                        ))
-                    )}
+                        );
+                    })}
                 </div>
 
-                {/* Announcements Grid */}
+                {/* Grid */}
                 {loading ? (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3, 4, 5, 6].map(i => (
-                            <div key={i} className="bg-white rounded-xl shadow-sm h-64 animate-pulse p-6">
-                                <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
-                                <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-                                <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                                <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                            </div>
-                        ))}
+                        {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+                    </div>
+                ) : announcements.length === 0 ? (
+                    <div className="text-center py-20">
+                        <span className="text-5xl block mb-4">📭</span>
+                        <p className="text-gray-500 text-lg">No announcements in this category yet.</p>
                     </div>
                 ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredAnnouncements.map((item) => {
-                            const colors = getCategoryColors(item.categoryColor || 'blue'); // Fallback color
+                        {announcements.map((item) => {
+                            const cat = item.category?.toLowerCase();
+                            const meta = CATEGORY_META[cat] || {
+                                label: item.category || 'General',
+                                bg: 'bg-indigo-100', text: 'text-indigo-800',
+                                border: 'border-indigo-200', emoji: '📢', accent: '#6366f1',
+                            };
+                            const isExpanded = expandedId === (item._id || item.id);
+                            // Message text (API uses `message`, static data may use `content` or `excerpt`)
+                            const msgText = item.message || item.content || item.excerpt || '';
+                            // Date: prefer publishAt from API, then date from static
+                            const displayDate = item.publishAt || item.createdAt || item.date;
 
                             return (
-                                <div key={item.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow border border-gray-100 flex flex-col">
-                                    <div className="p-6 flex-1">
+                                <div
+                                    key={item._id || item.id}
+                                    className={`bg-white rounded-2xl shadow-sm overflow-hidden border flex flex-col transition-shadow hover:shadow-md ${meta.border}`}
+                                >
+                                    {/* Accent top bar */}
+                                    <div className="h-1 w-full" style={{ background: meta.accent }} />
+
+                                    <div className="p-6 flex-1 flex flex-col">
+                                        {/* Category badge + date */}
                                         <div className="flex items-center justify-between mb-4">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${colors.bg} ${colors.text}`}>
-                                                {item.category}
+                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${meta.bg} ${meta.text}`}>
+                                                {meta.emoji} {meta.label}
                                             </span>
-                                            <span className="text-gray-400 text-sm flex items-center gap-1">
-                                                <CalendarIcon className="w-3 h-3" />
-                                                {formatDate(item.date)}
-                                            </span>
+                                            {displayDate && (
+                                                <span className="text-gray-400 text-xs" title={formatPublishDate(displayDate)}>
+                                                    {getTimeAgo(displayDate) || formatPublishDate(displayDate)}
+                                                </span>
+                                            )}
                                         </div>
 
-                                        <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">{item.title}</h3>
-                                        <p className="text-gray-600 mb-4 line-clamp-3">
-                                            {item.excerpt || (item.content ? item.content.substring(0, 120) + '...' : '')}
+                                        <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-snug">
+                                            {item.title}
+                                        </h3>
+
+                                        <p className={`text-gray-600 text-sm leading-relaxed flex-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                                            {msgText}
                                         </p>
+
+                                        {msgText.length > 160 && (
+                                            <button
+                                                onClick={() => setExpandedId(isExpanded ? null : (item._id || item.id))}
+                                                className="mt-3 text-sm font-semibold text-blue-600 hover:text-blue-800 text-left transition-colors"
+                                            >
+                                                {isExpanded ? '↑ Show less' : 'Read more →'}
+                                            </button>
+                                        )}
                                     </div>
 
-                                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-                                        <button className="text-blue-600 font-semibold text-sm hover:text-blue-800 flex items-center gap-1">
-                                            Read More <ChevronRightIcon className="w-4 h-4" />
-                                        </button>
-                                    </div>
+                                    {/* Footer */}
+                                    {displayDate && (
+                                        <div className="px-6 py-3 border-t border-gray-100 bg-gray-50">
+                                            <span className="text-xs text-gray-400">
+                                                📅 {formatPublishDate(displayDate)}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
                     </div>
                 )}
-            </div>
 
+                {/* Pagination */}
+                {totalPages > 1 && !loading && (
+                    <div className="flex items-center justify-center gap-3 mt-10">
+                        <button
+                            disabled={page === 1}
+                            onClick={() => setPage(p => p - 1)}
+                            className="px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                        >
+                            ← Previous
+                        </button>
+                        <span className="text-sm text-gray-500 px-2">
+                            Page {page} of {totalPages}
+                        </span>
+                        <button
+                            disabled={page >= totalPages}
+                            onClick={() => setPage(p => p + 1)}
+                            className="px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                        >
+                            Next →
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
