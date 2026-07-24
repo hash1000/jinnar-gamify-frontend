@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import viralService from '../services/viralService';
-import announcementsData from '../data/announcements';
 
 const CATEGORIES = ['All', 'winner', 'draw', 'promotion', 'system'];
 
@@ -11,7 +10,7 @@ const CATEGORY_META = {
     system:    { label: 'System',    bg: 'bg-gray-100',   text: 'text-gray-700',   border: 'border-gray-200',   emoji: '⚙️', accent: '#6b7280' },
 };
 
-const PAGE_LIMIT = 9;
+const PAGE_LIMIT = 10;
 
 const Announcements = () => {
     const [selectedCategory, setSelectedCategory] = useState('All');
@@ -29,23 +28,11 @@ const Announcements = () => {
 
             const response = await viralService.getAnnouncements(params);
 
-            if (response.success && response.data?.length > 0) {
-                setAnnouncements(response.data);
-                if (response.pagination) {
-                    setTotalPages(response.pagination.pages || 1);
-                }
-            } else {
-                // Fallback to static data for development/demo stability
-                console.log('Using static announcement data as fallback');
-                const filtered = selectedCategory === 'All'
-                    ? announcementsData
-                    : announcementsData.filter(a => a.category === selectedCategory);
-                setAnnouncements(filtered);
-                setTotalPages(1);
-            }
+            setAnnouncements(response.data || []);
+            setTotalPages(response.pagination?.pages || 1);
         } catch (error) {
             console.error('Error fetching announcements:', error);
-            setAnnouncements(announcementsData);
+            setAnnouncements([]);
             setTotalPages(1);
         } finally {
             setLoading(false);

@@ -246,7 +246,7 @@ const viralService = {
      * @param {{ category?: string, page?: number, limit?: number }} params
      */
     getAnnouncements: async (params = {}) => {
-        const response = await apiClient.get('/announcements', { params });
+        const response = await apiClient.get('/viral/announcements', { params });
         return response.data;
     },
 
@@ -255,7 +255,7 @@ const viralService = {
      * @param {string} id
      */
     getAnnouncementById: async (id) => {
-        const response = await apiClient.get(`/announcements/${id}`);
+        const response = await apiClient.get(`/viral/announcements/${id}`);
         return response.data;
     },
 
