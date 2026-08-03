@@ -139,7 +139,7 @@ const AdminAnnouncements = () => {
             <div className="px-6 py-8 max-w-6xl mx-auto">
 
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                     <div>
                         <h1 className="text-2xl font-bold" style={{ color: '#f1f5f9' }}>📢 Announcements</h1>
                         <p className="text-sm mt-1" style={{ color: '#94a3b8' }}>

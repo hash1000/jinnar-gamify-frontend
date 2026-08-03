@@ -5,6 +5,31 @@ import { faqData } from '../data/FAQ';
 import viralService from '../services/viralService';
 import { useCurrency } from '../contexts/CurrencyContext';
 
+// Truncates long text and reveals the rest on click
+const ReadMore = ({ text, limit = 120, className = '' }) => {
+    const [expanded, setExpanded] = useState(false);
+
+    if (!text) return null;
+
+    const isLong = text.length > limit;
+    const displayText = expanded || !isLong ? text : `${text.slice(0, limit).trimEnd()}…`;
+
+    return (
+        <span className={className}>
+            {displayText}
+            {isLong && (
+                <button
+                    type="button"
+                    onClick={() => setExpanded((prev) => !prev)}
+                    className="ml-1 text-blue-600 hover:text-blue-800 font-semibold text-sm whitespace-nowrap"
+                >
+                    {expanded ? 'Show less' : 'Read more'}
+                </button>
+            )}
+        </span>
+    );
+};
+
 const JinnarChallenge = () => {
     // State for dynamic data
     const { format } = useCurrency();
@@ -88,44 +113,64 @@ const JinnarChallenge = () => {
                     </div>
                 </div>
 
-                {/* It's Simple - Just 3 Steps */}
+                {/* It's Simple - Just 4 Steps */}
                 <h2 className="text-3xl font-bold text-gray-900 mb-12">
-                    It's Simple — Just 3 Steps
+                    It's Simple — Just 4 Steps
                 </h2>
 
-                {/* Step 1: Join an Active Draw */}
-                <div className="grid md:grid-cols-2 gap-12 items-start mb-16">
-                    <div>
+                <div className="grid md:grid-cols-2 gap-6 mb-16 items-stretch">
+
+                    {/* Step 1: Join an Active Draw */}
+                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
                                 1
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900">
+                            <h3 className="text-xl font-bold text-gray-900">
                                 {activeDraw ? `Join ${activeDraw.title}` : 'Join an Active Draw'}
                             </h3>
                         </div>
 
-                        <p className="text-gray-700 mb-4">
+                        <p className="text-gray-700 mb-4 text-sm">
                             Jinnar runs numbered challenge rounds called <span className="font-semibold">Draws</span>.
-                            {activeDraw && (
-                                <span className="block mt-2 bg-blue-50 p-3 rounded-lg border border-blue-100">
-                                    <strong className="text-blue-800">Current Theme:</strong> {activeDraw.theme}
-                                </span>
-                            )}
                         </p>
 
-                        {!activeDraw && (
-                            <p className="text-gray-700 mb-4">Each Draw has a focus topic, official hashtags, deadlines, and a prize pool.</p>
+                        {activeDraw ? (
+                            <div className="bg-gray-50 rounded-lg border border-gray-100 p-4 mb-4 space-y-3 flex-1">
+                                <div>
+                                    <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Current Theme</p>
+                                    <p className="text-sm font-semibold text-blue-800">
+                                        <ReadMore text={activeDraw.theme} limit={60} />
+                                    </p>
+                                </div>
+
+                                {activeDraw?.hashtags?.length > 0 && (
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Hashtags</p>
+                                        <p className="text-sm text-gray-800 break-words">
+                                            <ReadMore text={activeDraw.hashtags.join(' ')} limit={60} />
+                                        </p>
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-200">
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Deadline</p>
+                                        <p className="text-sm font-medium text-gray-900">{new Date(activeDraw.endDate).toLocaleDateString()}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Prize Pool</p>
+                                        <p className="text-sm font-bold text-green-600">{format(activeDraw.prizePool || 10000)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex-1 mb-4">
+                                <p className="text-gray-700 text-sm">Each Draw has a focus topic, official hashtags, deadlines, and a prize pool.</p>
+                            </div>
                         )}
 
-                        <ul className="space-y-2 mb-4 ml-4">
-                            <li className="text-gray-700">• A focus topic or creative direction</li>
-                            <li className="text-gray-700">• Official hashtags (e.g., {activeDraw?.hashtags?.join(' ') || '#JinnarViral'})</li>
-                            <li className="text-gray-700">• Contest Closes: {activeDraw ? new Date(activeDraw.endDate).toLocaleDateString() : 'See details'}</li>
-                            <li className="text-gray-700">• Prize Pool: <span className="font-bold text-green-600">{format(activeDraw?.prizePool || 10000)}</span></li>
-                        </ul>
-
-                        <Link to="/upload">
+                        <Link to="/upload" className="mt-auto">
                             <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2 px-5 rounded-md transition-colors flex items-center gap-2">
                                 {loadingDraw ? 'Loading Draw...' : 'Join Now'}
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,16 +180,8 @@ const JinnarChallenge = () => {
                         </Link>
                     </div>
 
-                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl h-64 flex items-center justify-center">
-                        <span className="text-5xl">🎯</span>
-                    </div>
-                </div>
-
-                {/* Steps 2 & 3 Side by Side */}
-                <div className="grid md:grid-cols-2 gap-12 mb-16">
-
                     {/* Step 2: Upload Your Video for Approval */}
-                    <div>
+                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
                                 2
@@ -152,12 +189,14 @@ const JinnarChallenge = () => {
                             <h3 className="text-xl font-bold text-gray-900">Upload Your Video for Approval</h3>
                         </div>
 
-                        {/* Static content for step 2 remains valid */}
                         <p className="text-gray-700 mb-4 text-sm">
-                            Before posting publicly, upload your video to Jinnar Viral for review. This ensures content quality, safety, and brand alignment.
+                            <ReadMore
+                                text="Before posting publicly, upload your video to Jinnar Viral for review. This ensures content quality, safety, and brand alignment."
+                                limit={110}
+                            />
                         </p>
 
-                        <div className="mb-4">
+                        <div className="mb-4 flex-1">
                             <p className="font-semibold text-gray-900 mb-2 text-sm">Review Process:</p>
                             <ul className="space-y-1 ml-4 text-sm">
                                 <li className="text-gray-700">• AI + human review</li>
@@ -166,7 +205,7 @@ const JinnarChallenge = () => {
                             </ul>
                         </div>
 
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="flex gap-2 flex-wrap mt-auto">
                             <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-md text-xs font-medium flex items-center gap-1">
                                 <span className="text-yellow-600">⚠</span> Pending Review
                             </span>
@@ -180,7 +219,7 @@ const JinnarChallenge = () => {
                     </div>
 
                     {/* Step 3: Post & Earn Points */}
-                    <div>
+                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
                                 3
@@ -192,7 +231,7 @@ const JinnarChallenge = () => {
                             Once approved, publish your video on supported platforms and share your post link or screenshot.
                         </p>
 
-                        <div className="mb-4">
+                        <div className="mb-4 flex-1">
                             <p className="font-semibold text-gray-900 mb-3 text-sm">Supported Platforms:</p>
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2">
@@ -210,7 +249,7 @@ const JinnarChallenge = () => {
                             </div>
                         </div>
 
-                        <Link to="/submit-link">
+                        <Link to="/submit-link" className="mt-auto">
                             <button className="bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2 px-5 rounded-md transition-colors text-sm flex items-center gap-2">
                                 Submit Post Link / Proof
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,25 +258,27 @@ const JinnarChallenge = () => {
                             </button>
                         </Link>
                     </div>
-                </div>
 
-                {/* Step 4: Compete Within Each Draw */}
-                <div className="mb-16">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
-                            4
+                    {/* Step 4: Compete Within Each Draw */}
+                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
+                                4
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900">Compete Within This Draw</h3>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900">Compete Within This Draw</h3>
-                    </div>
 
-                    {/* Leaderboard Preview */}
-                    <div className="max-w-md">
-                        <div className="bg-gray-900 text-white rounded-xl p-5 mb-4">
-                            <div className="flex justify-between items-center mb-4">
-                                <h4 className="text-lg font-bold">
-                                    {activeDraw ? `Leaders: ${activeDraw.title}` : 'Leaderboard Preview'}
+                        {/* Leaderboard Preview */}
+                        <div className="bg-gray-900 text-white rounded-xl p-5 mb-4 flex-1">
+                            <div className="flex justify-between items-start gap-2 mb-4">
+                                <h4 className="text-sm font-bold">
+                                    <ReadMore
+                                        text={activeDraw ? `Leaders: ${activeDraw.title}` : 'Leaderboard Preview'}
+                                        limit={40}
+                                        className="text-white"
+                                    />
                                 </h4>
-                                <Link to="/leaderboards" className="text-xs text-blue-400 hover:text-blue-300">
+                                <Link to="/leaderboards" className="text-xs text-blue-400 hover:text-blue-300 whitespace-nowrap flex-shrink-0">
                                     View Full Leaderboard →
                                 </Link>
                             </div>
@@ -259,10 +300,10 @@ const JinnarChallenge = () => {
                                     leaderboardPreview.map((entry, index) => (
                                         <div key={index} className="grid grid-cols-4 gap-3 items-center text-sm">
                                             <div className="text-blue-400 font-bold"># {entry.rank || index + 1}</div>
-                                            <div className="col-span-2 flex items-center gap-2">
-                                                <span>{entry.name || 'Anonymous user'}</span>
+                                            <div className="col-span-2 flex items-center gap-2 min-w-0">
+                                                <span className="truncate">{entry.name || 'Anonymous user'}</span>
                                                 {/* Flag placeholder - api might not return country code yet */}
-                                                <span className="text-xs text-gray-500">{entry.country || '🌐'}</span>
+                                                <span className="text-xs text-gray-500 flex-shrink-0">{entry.country || '🌐'}</span>
                                             </div>
                                             <div className="text-right font-bold">{entry.totalPoints?.toLocaleString()}</div>
                                         </div>
@@ -277,7 +318,7 @@ const JinnarChallenge = () => {
                             </div>
                         </div>
 
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-gray-600 mt-auto">
                             <span className="inline-block mr-1">✓</span>
                             Points are verified using platform APIs and AI validation tools.
                         </p>
