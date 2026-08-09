@@ -33,10 +33,10 @@ apiClient.interceptors.request.use(
 
         // Log requests in development
         if (import.meta.env.DEV) {
-            console.log('📤 API Request:', {
-                method: config.method?.toUpperCase(),
-                url: `${config.baseURL}${config.url}`,
-            });
+            // console.log('📤 API Request:', {
+            //     method: config.method?.toUpperCase(),
+            //     url: `${config.baseURL}${config.url}`,
+            // });
         }
 
         return config;

@@ -24,14 +24,14 @@ client.interceptors.request.use(
     }
 
     // Log the request details
-    console.log('📤 API Request:', {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`,
-      data: config.data,
-      headers: config.headers,
-    });
+    // console.log('📤 API Request:', {
+    //   method: config.method?.toUpperCase(),
+    //   url: config.url,
+    //   baseURL: config.baseURL,
+    //   fullURL: `${config.baseURL}${config.url}`,
+    //   data: config.data,
+    //   headers: config.headers,
+    // });
 
     return config;
   },

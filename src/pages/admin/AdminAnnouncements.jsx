@@ -20,6 +20,22 @@ const emptyForm = {
     isActive: true,
 };
 
+// Convert a UTC ISO string to the value <input type="datetime-local"> expects,
+// preserving the actual instant by adjusting for the browser's local offset.
+const toDatetimeLocalValue = (isoString) => {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    const offsetMs = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
+};
+
+// Convert a <input type="datetime-local"> value (interpreted as local time
+// by the browser) back to a correct UTC ISO string.
+const fromDatetimeLocalValue = (localValue) => {
+    if (!localValue) return '';
+    return new Date(localValue).toISOString();
+};
+
 const AdminAnnouncements = () => {
     const [announcements, setAnnouncements] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -66,7 +82,7 @@ const AdminAnnouncements = () => {
             title: a.title || '',
             message: a.message || '',
             category: a.category || 'system',
-            publishAt: a.publishAt ? a.publishAt.slice(0, 16) : '',
+            publishAt: toDatetimeLocalValue(a.publishAt),
             drawId: a.drawId || '',
             isActive: a.isActive !== false,
         });
@@ -86,7 +102,7 @@ const AdminAnnouncements = () => {
                 category: form.category,
                 isActive: form.isActive,
             };
-            if (form.publishAt) payload.publishAt = new Date(form.publishAt).toISOString();
+            if (form.publishAt) payload.publishAt = fromDatetimeLocalValue(form.publishAt);
             if (form.drawId.trim()) payload.drawId = form.drawId.trim();
 
             if (editTarget) {

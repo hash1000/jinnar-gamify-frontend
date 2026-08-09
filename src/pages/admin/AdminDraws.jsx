@@ -12,6 +12,21 @@ const AdminDraws = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all'); // all, active, upcoming, completed
     const [error, setError] = useState(null);
+    const [expandedHashtags, setExpandedHashtags] = useState({});
+    const [overflowingHashtags, setOverflowingHashtags] = useState({});
+    const hashtagRefs = React.useRef({});
+
+    const toggleHashtags = (drawId) => {
+        setExpandedHashtags(prev => ({ ...prev, [drawId]: !prev[drawId] }));
+    };
+
+    useEffect(() => {
+        const nextOverflow = {};
+        Object.entries(hashtagRefs.current).forEach(([drawId, el]) => {
+            if (el) nextOverflow[drawId] = el.scrollWidth > el.clientWidth;
+        });
+        setOverflowingHashtags(nextOverflow);
+    }, [draws]);
 
     useEffect(() => {
         fetchDraws();
@@ -191,12 +206,25 @@ const AdminDraws = () => {
                                 {/* Card Body */}
                                 <div className="p-4 space-y-3">
                                     {/* Hashtags */}
-                                    <div className="flex flex-wrap gap-1">
-                                        {draw.hashtags && draw.hashtags.map((tag, idx) => (
-                                            <span key={idx} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                                                #{tag}
-                                            </span>
-                                        ))}
+                                    <div>
+                                        <div
+                                            ref={(el) => { hashtagRefs.current[draw._id] = el; }}
+                                            className={`flex gap-1 w-full ${expandedHashtags[draw._id] ? 'flex-wrap' : 'flex-nowrap overflow-hidden'}`}
+                                        >
+                                            {draw.hashtags && draw.hashtags.map((tag, idx) => (
+                                                <span key={idx} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded whitespace-nowrap">
+                                                    #{tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        {overflowingHashtags[draw._id] && (
+                                            <button
+                                                onClick={() => toggleHashtags(draw._id)}
+                                                className="text-xs text-blue-800 font-semibold hover:underline mt-1"
+                                            >
+                                                {expandedHashtags[draw._id] ? 'Show less' : 'Read more'}
+                                            </button>
+                                        )}
                                     </div>
 
                                     {/* Draw Info */}

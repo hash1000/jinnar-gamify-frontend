@@ -105,6 +105,25 @@ const adminService = {
         return response.data;
     },
 
+    /**
+     * Update a pending reward's type/amount (blocked once a winner is assigned or it's approved/paid)
+     * @param {string} rewardId
+     * @param {{rewardType?: string, amount?: number}} updates
+     */
+    updateReward: async (rewardId, updates) => {
+        const response = await apiClient.patch(`/viral/admin/rewards/${rewardId}`, updates);
+        return response.data;
+    },
+
+    /**
+     * Delete a pending reward tier (blocked once a winner is assigned or it's approved/paid)
+     * @param {string} rewardId
+     */
+    deleteReward: async (rewardId) => {
+        const response = await apiClient.delete(`/viral/admin/rewards/${rewardId}`);
+        return response.data;
+    },
+
     // ==================== SUBMISSION MANAGEMENT ====================
 
     /**

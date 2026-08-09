@@ -48,9 +48,9 @@ const AdminDashboard = () => {
             setStats({
                 draws: statsData.totalDraws || draws.length,
                 pendingSubmissions: statsData.pendingSubmissions || submissions.filter(s => s.status === 'pending').length,
-                verifiedUsers: statsData.verifiedUsers || 124, // Mock if missing
-                totalRevenue: statsData.totalRevenue || 12500, // Mock if missing
-                pendingUsers: statsData.pendingUsers || 5
+                verifiedUsers: statsData.verifiedUsers || 0, // Mock if missing
+                totalRevenue: statsData.totalRevenue || 0, // Mock if missing
+                pendingUsers: statsData.pendingUsers || 0
             });
         } catch (error) {
             console.error('Failed to load dashboard statistics:', error);

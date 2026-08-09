@@ -181,7 +181,7 @@ const viralService = {
      * @param {string} drawId
      */
     getSingleDraw: async (drawId) => {
-        const response = await apiClient.get(`/viral/draws/${drawId}`);
+        const response = await apiClient.get(`/viral/admin/draws/${drawId}`);
         return response.data;
     },
 
@@ -191,6 +191,14 @@ const viralService = {
      */
     getDrawWinners: async (drawId) => {
         const response = await apiClient.get(`/viral/draws/${drawId}/winners`);
+        return response.data;
+    },
+
+    /**
+     * Get the current global Jinnar Viral prize configuration (default tiers)
+     */
+    getPrizeConfig: async () => {
+        const response = await apiClient.get('/viral/prize-config');
         return response.data;
     },
 
