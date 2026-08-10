@@ -13,6 +13,12 @@ export const userService = {
         return response.data;
     },
 
+    // 2b. Change password (while logged in)
+    changePassword: async (currentPassword, newPassword) => {
+        const response = await apiClient.post('/user/change-password', { currentPassword, newPassword });
+        return response.data;
+    },
+
     // 3. Get public profile (no auth needed)
     getPublicProfile: async (userId) => {
         const response = await apiClient.get(`/user/public/${userId}`);

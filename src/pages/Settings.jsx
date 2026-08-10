@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import userService from '../services/userService';
 import authService from '../services/authService';
+import { fetchCurrentUser } from '../store/slices/userSlice';
 
 const Settings = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [activeTab, setActiveTab] = useState('profile');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -13,8 +16,9 @@ const Settings = () => {
     const [profileData, setProfileData] = useState({
         name: '',
         bio: '',
-        location: '',
-        phone: ''
+        city: '',
+        country: '',
+        mobileNumber: ''
     });
 
     // Password change state
@@ -50,8 +54,9 @@ const Settings = () => {
             setProfileData({
                 name: data.name || '',
                 bio: data.bio || '',
-                location: data.location || '',
-                phone: data.phone || ''
+                city: data.city || '',
+                country: data.country || '',
+                mobileNumber: data.mobileNumber || ''
             });
             setSelectedRole(data.role || 'buyer');
         } catch (error) {
@@ -71,16 +76,18 @@ const Settings = () => {
         setLoading(true);
         try {
             // Only send fields that buyers are allowed to update
-            // Buyers can update: name, location, phone, address, country, postalCode
+            // Buyers can update: name, city, country, mobileNumber, address, postalCode
             // Buyers CANNOT update: bio, skills, categories, etc. (seller-specific fields)
             const allowedData = {
                 name: profileData.name,
-                location: profileData.location,
-                phone: profileData.phone
+                city: profileData.city,
+                country: profileData.country,
+                mobileNumber: profileData.mobileNumber
             };
 
             await userService.updateProfile(allowedData);
             showMessage('success', 'Profile updated successfully!');
+            dispatch(fetchCurrentUser());
         } catch (error) {
             showMessage('error', error.response?.data?.error || error.response?.data?.message || 'Failed to update profile');
         } finally {
@@ -99,8 +106,7 @@ const Settings = () => {
 
         setLoading(true);
         try {
-            // Note: You'll need to implement this endpoint
-            await authService.changePassword(passwordData.currentPassword, passwordData.newPassword);
+            await userService.changePassword(passwordData.currentPassword, passwordData.newPassword);
             showMessage('success', 'Password changed successfully!');
             setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch (error) {
@@ -146,12 +152,12 @@ const Settings = () => {
         setLoading(true);
         try {
             await authService.switchRole(selectedRole);
-            showMessage('success', `Role switched to ${selectedRole} successfully!`);
-            // Reload profile to get updated role
-            await loadProfile();
+            showMessage('success', `Role switched to ${selectedRole} successfully! Reloading...`);
+            // Switch-role issues a new JWT with the updated role; reload so the
+            // whole app (header, redux user state) re-derives from the new token.
+            setTimeout(() => window.location.reload(), 800);
         } catch (error) {
-            showMessage('error', error.response?.data?.message || 'Failed to switch role');
-        } finally {
+            showMessage('error', error.response?.data?.error || error.response?.data?.message || 'Failed to switch role');
             setLoading(false);
         }
     };
@@ -159,15 +165,15 @@ const Settings = () => {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
 
-            <div className="flex-1 max-w-5xl mx-auto px-6 py-8 w-full">
+            <div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 w-full">
                 <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-                    <p className="text-gray-600 mt-2">Manage your account settings and preferences</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Settings</h1>
+                    <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your account settings and preferences</p>
                 </div>
 
                 {/* Message Alert */}
                 {message.text && (
-                    <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
+                    <div className={`mb-6 p-4 rounded-lg text-sm sm:text-base ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
                         'bg-red-50 text-red-800 border border-red-200'
                         }`}>
                         {message.text}
@@ -177,12 +183,12 @@ const Settings = () => {
                 <div className="bg-white rounded-xl shadow-md overflow-hidden">
                     {/* Tabs */}
                     <div className="border-b">
-                        <div className="flex gap-1 p-2 flex-wrap">
+                        <div className="flex gap-1 p-2 overflow-x-auto sm:flex-wrap">
                             {['profile', 'password', 'email', 'role'].map(tab => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
-                                    className={`px-6 py-3 rounded-lg font-semibold transition-colors ${activeTab === tab
+                                    className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${activeTab === tab
                                         ? 'bg-blue-800 text-white'
                                         : 'text-gray-600 hover:bg-gray-100'
                                         }`}
@@ -193,7 +199,7 @@ const Settings = () => {
                         </div>
                     </div>
 
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                         {/* Profile Tab */}
                         {activeTab === 'profile' && (
                             <div>
@@ -212,17 +218,31 @@ const Settings = () => {
                                         />
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Location
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={profileData.location}
-                                            onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            placeholder="Lagos, Nigeria"
-                                        />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                City
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={profileData.city}
+                                                onChange={(e) => setProfileData({ ...profileData, city: e.target.value })}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                placeholder="Lagos"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Country
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={profileData.country}
+                                                onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                placeholder="Nigeria"
+                                            />
+                                        </div>
                                     </div>
 
                                     <div>
@@ -231,11 +251,12 @@ const Settings = () => {
                                         </label>
                                         <input
                                             type="tel"
-                                            value={profileData.phone}
-                                            onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                                            value={profileData.mobileNumber}
+                                            onChange={(e) => setProfileData({ ...profileData, mobileNumber: e.target.value })}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             placeholder="+234 801 234 5678"
                                         />
+                                        <p className="text-xs text-gray-500 mt-1">Format: +[country code][number], e.g. +2348012345678</p>
                                     </div>
 
                                     <button

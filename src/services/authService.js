@@ -52,13 +52,16 @@ export const authService = {
 
   // 7. Switch role (requires auth)
   switchRole: async (role) => {
-    const response = await apiClient.post('/auth/switch-role', { role });
+    const response = await apiClient.post('/auth/switch-role', { newRole: role });
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+    }
     return response.data;
   },
 
   // 8. Initiate contact change
   initiateContactChange: async (newEmail) => {
-    const response = await apiClient.post('/auth/change-contact/initiate', { newEmail });
+    const response = await apiClient.post('/auth/change-contact/initiate', { newIdentifier: newEmail, type: 'email' });
     return response.data;
   },
 

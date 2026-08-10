@@ -131,16 +131,16 @@ const UserDashboard = () => {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
 
-            <div className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
-                <div className="grid lg:grid-cols-12 gap-6">
+            <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 w-full">
+                <div className="grid lg:grid-cols-12 gap-4 sm:gap-6">
 
                     {/* Left Sidebar - Profile Card */}
                     <div className="lg:col-span-3">
-                        <div className="bg-white rounded-xl shadow-md p-6 sticky top-24">
+                        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:sticky lg:top-24">
                             <div className="text-center mb-6">
                                 <div className="relative inline-block mb-4">
-                                    <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center border-4 border-blue-100">
-                                        <span className="text-4xl">{getCountryFlag(user?.country)}</span>
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center border-4 border-blue-100">
+                                        <span className="text-3xl sm:text-4xl">{getCountryFlag(user?.country)}</span>
                                     </div>
                                     {user?.verified && (
                                         <div className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white">
@@ -150,12 +150,14 @@ const UserDashboard = () => {
                                         </div>
                                     )}
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-900">{user?.name || 'User'}</h2>
-                                <p className="text-gray-600 text-sm">@{user?.username || 'username'}</p>
-                                <p className="text-gray-500 text-sm flex items-center justify-center gap-1 mt-1">
-                                    <span className="text-lg">{getCountryFlag(user?.country)}</span>
-                                    {user?.city || 'City'}, {user?.country || 'Country'}
-                                </p>
+                                <h2 className="text-xl font-bold text-gray-900 truncate">{user?.name || 'User'}</h2>
+                                {user?.email && <p className="text-gray-600 text-sm truncate">{user.email}</p>}
+                                {(user?.city || user?.country) && (
+                                    <p className="text-gray-500 text-sm flex items-center justify-center gap-1 mt-1">
+                                        <span className="text-lg">{getCountryFlag(user?.country)}</span>
+                                        <span className="truncate">{[user?.city, user?.country].filter(Boolean).join(', ')}</span>
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-3 mb-6">
@@ -195,33 +197,33 @@ const UserDashboard = () => {
                     <div className="lg:col-span-9">
 
                         {/* Stats Overview Cards */}
-                        <div className="grid md:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-white rounded-xl shadow-md p-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                            <div className="bg-white rounded-xl shadow-md p-3 sm:p-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-2xl font-bold text-gray-900">{stats.videosSubmitted}</span>
+                                    <span className="text-xl sm:text-2xl font-bold text-gray-900">{stats.videosSubmitted}</span>
                                 </div>
-                                <p className="text-sm text-gray-600">Videos Submitted</p>
+                                <p className="text-xs sm:text-sm text-gray-600">Videos Submitted</p>
                             </div>
 
-                            <div className="bg-white rounded-xl shadow-md p-4">
+                            <div className="bg-white rounded-xl shadow-md p-3 sm:p-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-2xl font-bold text-gray-900">{stats.videosApproved}</span>
+                                    <span className="text-xl sm:text-2xl font-bold text-gray-900">{stats.videosApproved}</span>
                                 </div>
-                                <p className="text-sm text-gray-600">Approved</p>
+                                <p className="text-xs sm:text-sm text-gray-600">Approved</p>
                             </div>
 
-                            <div className="bg-white rounded-xl shadow-md p-4">
+                            <div className="bg-white rounded-xl shadow-md p-3 sm:p-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-2xl font-bold text-gray-900">{stats.activeDraws}</span>
+                                    <span className="text-xl sm:text-2xl font-bold text-gray-900">{stats.activeDraws}</span>
                                 </div>
-                                <p className="text-sm text-gray-600">Active Draws</p>
+                                <p className="text-xs sm:text-sm text-gray-600">Active Draws</p>
                             </div>
 
-                            <div className="bg-white rounded-xl shadow-md p-4">
+                            <div className="bg-white rounded-xl shadow-md p-3 sm:p-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-2xl font-bold text-gray-900">{rewards.length}</span>
+                                    <span className="text-xl sm:text-2xl font-bold text-gray-900">{rewards.length}</span>
                                 </div>
-                                <p className="text-sm text-gray-600">Rewards Earned</p>
+                                <p className="text-xs sm:text-sm text-gray-600">Rewards Earned</p>
                             </div>
                         </div>
 
@@ -233,7 +235,7 @@ const UserDashboard = () => {
                                         <button
                                             key={tab}
                                             onClick={() => setActiveTab(tab)}
-                                            className={`px-6 py-3 rounded-lg font-semibold transition-colors ${activeTab === tab
+                                            className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-colors ${activeTab === tab
                                                 ? 'bg-blue-800 text-white'
                                                 : 'text-gray-600 hover:bg-gray-100'
                                                 }`}
@@ -244,7 +246,7 @@ const UserDashboard = () => {
                                 </div>
                             </div>
 
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
 
                                 {/* Overview Tab */}
                                 {activeTab === 'overview' && (
@@ -273,23 +275,23 @@ const UserDashboard = () => {
 
                                         {activeDraw && (
                                             <div>
-                                                <h3 className="text-xl font-bold text-gray-900 mb-4">Current Draw Status</h3>
-                                                <div className="bg-gradient-to-r from-blue-50 to-teal-50 rounded-xl p-6 border-2 border-blue-200">
-                                                    <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-                                                        <div>
-                                                            <h4 className="text-lg font-bold text-gray-900">{activeDraw.title}</h4>
+                                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Current Draw Status</h3>
+                                                <div className="bg-gradient-to-r from-blue-50 to-teal-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
+                                                    <div className="flex items-center justify-between mb-4 flex-wrap gap-3 min-w-0">
+                                                        <div className="min-w-0 flex-1">
+                                                            <h4 className="text-lg font-bold text-gray-900 truncate">{activeDraw.title}</h4>
                                                             <p className="text-sm text-gray-600">Ends: {formatDate(activeDraw.endDate)}</p>
                                                         </div>
-                                                        <span className="px-3 py-1 bg-green-500 text-white rounded-full text-sm font-bold">Active</span>
+                                                        <span className="px-3 py-1 bg-green-500 text-white rounded-full text-sm font-bold flex-shrink-0">Active</span>
                                                     </div>
-                                                    <div className="grid md:grid-cols-3 gap-4 mb-4">
+                                                    <div className="grid grid-cols-2 gap-4 mb-4">
                                                         <div>
                                                             <p className="text-sm text-gray-600 mb-1">Your Rank</p>
-                                                            <p className="text-2xl font-bold text-blue-700">#{stats.globalRank}</p>
+                                                            <p className="text-xl sm:text-2xl font-bold text-blue-700">#{stats.globalRank}</p>
                                                         </div>
                                                         <div>
                                                             <p className="text-sm text-gray-600 mb-1">Points Earned</p>
-                                                            <p className="text-2xl font-bold text-blue-700">{stats.totalPoints.toLocaleString()}</p>
+                                                            <p className="text-xl sm:text-2xl font-bold text-blue-700">{stats.totalPoints.toLocaleString()}</p>
                                                         </div>
                                                     </div>
                                                     <Link to="/leaderboards">
@@ -331,9 +333,9 @@ const UserDashboard = () => {
                                 {activeTab === 'submissions' && (
                                     <div>
                                         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-                                            <h3 className="text-xl font-bold text-gray-900">My Video Submissions</h3>
+                                            <h3 className="text-lg sm:text-xl font-bold text-gray-900">My Video Submissions</h3>
                                             <Link to="/upload">
-                                                <button className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-semibold transition-colors">
+                                                <button className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg text-sm sm:text-base font-semibold transition-colors">
                                                     Upload New Video
                                                 </button>
                                             </Link>
@@ -342,9 +344,9 @@ const UserDashboard = () => {
                                         {submissions.length > 0 ? (
                                             <div className="space-y-4">
                                                 {submissions.map(video => (
-                                                    <div key={video._id} className="bg-gray-50 rounded-xl p-4 border-l-4 border-blue-500">
+                                                    <div key={video._id} className="bg-gray-50 rounded-xl p-3 sm:p-4 border-l-4 border-blue-500">
                                                         <div className="flex gap-4 flex-wrap">
-                                                            <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg w-32 h-24 flex items-center justify-center flex-shrink-0">
+                                                            <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg w-24 h-20 sm:w-32 sm:h-24 flex items-center justify-center flex-shrink-0">
                                                                 {/* Use video thumbnail if available, else placeholder */}
                                                                 <span className="text-gray-400 text-xs text-center p-1">
                                                                     {video.videoUrl ? 'Video' : 'No Media'}
@@ -352,9 +354,9 @@ const UserDashboard = () => {
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-start justify-between mb-2 flex-wrap gap-2">
-                                                                    <div>
-                                                                        <h4 className="font-bold text-gray-900 text-lg">{video.title}</h4>
-                                                                        <p className="text-xs text-gray-500">ID: {video._id}</p>
+                                                                    <div className="min-w-0">
+                                                                        <h4 className="font-bold text-gray-900 text-base sm:text-lg truncate">{video.title}</h4>
+                                                                        <p className="text-xs text-gray-500 truncate">ID: {video._id}</p>
                                                                     </div>
                                                                     <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${video.status === 'approved' ? 'bg-green-100 text-green-700' :
                                                                         video.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
@@ -399,19 +401,19 @@ const UserDashboard = () => {
                                 {/* Rewards Tab */}
                                 {activeTab === 'rewards' && (
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-900 mb-6">My Rewards & Achievements</h3>
+                                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-6">My Rewards & Achievements</h3>
 
                                         {rewards.length > 0 ? (
                                             <div className="space-y-4">
                                                 {rewards.map((reward, idx) => (
-                                                    <div key={idx} className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border-2 border-yellow-200">
+                                                    <div key={idx} className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-4 sm:p-6 border-2 border-yellow-200">
                                                         <div className="flex items-center gap-4">
-                                                            <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                                                <span className="text-white text-xl">🏆</span>
+                                                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                                                <span className="text-white text-lg sm:text-xl">🏆</span>
                                                             </div>
-                                                            <div className="flex-1">
-                                                                <h4 className="text-lg font-bold text-gray-900">{reward.drawId?.title || 'Competition'} Winner</h4>
-                                                                <p className="text-gray-700">Rank: #{reward.rank} • {reward.rewardType}: {reward.amount}</p>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className="text-base sm:text-lg font-bold text-gray-900 truncate">{reward.drawId?.title || 'Competition'} Winner</h4>
+                                                                <p className="text-gray-700 text-sm sm:text-base">Rank: #{reward.rank} • {reward.rewardType}: {reward.amount}</p>
                                                                 <p className="text-sm text-gray-600">Status: {reward.status}</p>
                                                             </div>
                                                         </div>

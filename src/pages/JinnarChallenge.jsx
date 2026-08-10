@@ -34,9 +34,7 @@ const JinnarChallenge = () => {
     // State for dynamic data
     const { format } = useCurrency();
     const [activeDraw, setActiveDraw] = useState(null);
-    const [leaderboardPreview, setLeaderboardPreview] = useState([]);
     const [loadingDraw, setLoadingDraw] = useState(true);
-    const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
     // Fetch Active Draw
     useEffect(() => {
@@ -45,11 +43,7 @@ const JinnarChallenge = () => {
                 const response = await viralService.getActiveDraws();
                 if (response.success && response.data.length > 0) {
                     // Get the first active draw (most relevant one)
-                    const draw = response.data[0];
-                    setActiveDraw(draw);
-
-                    // Once we have a draw, fetch its top 3 leaders for preview
-                    fetchLeaderboardPreview(draw._id);
+                    setActiveDraw(response.data[0]);
                 }
             } catch (error) {
                 console.error('Error fetching active draw:', error);
@@ -61,73 +55,64 @@ const JinnarChallenge = () => {
         fetchActiveDraw();
     }, []);
 
-    // Fetch Leaderboard Preview for the specific draw
-    const fetchLeaderboardPreview = async (drawId) => {
-        setLoadingLeaderboard(true);
-        try {
-            // scope='global', limit=3
-            const response = await viralService.getLeaderboard(drawId, 'global', 3);
-            if (response.success) {
-                setLeaderboardPreview(response.data);
-            }
-        } catch (error) {
-            console.error('Error fetching leaderboard preview:', error);
-        } finally {
-            setLoadingLeaderboard(false);
-        }
-    };
-
     return (
         <div className="min-h-screen bg-white">
 
             {/* Main Content */}
-            <div className="max-w-6xl mx-auto px-6 py-12">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 
                 {/* Hero Section */}
-                <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
-                    <div>
-                        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                <div className="mb-10 sm:mb-16">
+                    <div className="max-w-2xl">
+                        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
                             How the Jinnar Viral Challenge Works
                         </h1>
-                        <p className="text-gray-700 mb-6">
+                        <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8">
                             Create content. Get approved. Go <span className="text-blue-600 font-semibold">viral</span>. Earn points. Win <span className="text-blue-600 font-semibold">rewards</span>.
                         </p>
-                        <div className="flex gap-3">
-                            <Link to="/upload">
-                                <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2.5 px-6 rounded-md transition-colors">
+                        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                            <Link to="/upload" className="w-full sm:w-auto">
+                                <button className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2.5 px-6 rounded-md transition-colors">
                                     {activeDraw ? 'Join Active Challenge' : 'Join Challenge'}
                                 </button>
                             </Link>
-                            <Link to="/upload">
-                                <button className="bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-6 rounded-md transition-colors flex items-center gap-2">
+                            <Link to="/upload" className="w-full sm:w-auto">
+                                <button className="w-full sm:w-auto bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-6 rounded-md transition-colors flex items-center justify-center gap-2">
                                     Upload Video for Approval
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
                             </Link>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl h-72 flex items-center justify-center">
-                        <span className="text-6xl">🚀</span>
-                    </div>
                 </div>
 
                 {/* It's Simple - Just 4 Steps */}
-                <h2 className="text-3xl font-bold text-gray-900 mb-12">
-                    It's Simple — Just 4 Steps
-                </h2>
+                <div className="mb-8 sm:mb-10">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                        It's Simple — Just 4 Steps
+                    </h2>
+                    <p className="text-sm sm:text-base text-gray-500">From joining a Draw to climbing the leaderboard.</p>
+                </div>
 
-                <div className="grid md:grid-cols-2 gap-6 mb-16 items-stretch">
+                <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-12 sm:mb-16 items-stretch">
 
                     {/* Step 1: Join an Active Draw */}
-                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-3 mb-4">
+                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-3 mb-4 min-w-0">
                             <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
                                 1
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900">
-                                {activeDraw ? `Join ${activeDraw.title}` : 'Join an Active Draw'}
+                            <h3 className="text-xl font-bold text-gray-900 min-w-0 flex-1">
+                                {activeDraw ? (
+                                    <span className="flex items-baseline gap-1.5 min-w-0">
+                                        <span className="flex-shrink-0">Join</span>
+                                        <span className="truncate">{activeDraw.title}</span>
+                                    </span>
+                                ) : (
+                                    'Join an Active Draw'
+                                )}
                             </h3>
                         </div>
 
@@ -170,10 +155,10 @@ const JinnarChallenge = () => {
                             </div>
                         )}
 
-                        <Link to="/upload" className="mt-auto">
-                            <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2 px-5 rounded-md transition-colors flex items-center gap-2">
+                        <Link to="/upload" className="mt-auto w-full sm:w-auto">
+                            <button className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2 px-5 rounded-md transition-colors flex items-center justify-center gap-2">
                                 {loadingDraw ? 'Loading Draw...' : 'Join Now'}
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                             </button>
@@ -181,7 +166,7 @@ const JinnarChallenge = () => {
                     </div>
 
                     {/* Step 2: Upload Your Video for Approval */}
-                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
                                 2
@@ -219,7 +204,7 @@ const JinnarChallenge = () => {
                     </div>
 
                     {/* Step 3: Post & Earn Points */}
-                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
                                 3
@@ -249,10 +234,10 @@ const JinnarChallenge = () => {
                             </div>
                         </div>
 
-                        <Link to="/submit-link" className="mt-auto">
-                            <button className="bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2 px-5 rounded-md transition-colors text-sm flex items-center gap-2">
+                        <Link to="/submit-link" className="mt-auto w-full sm:w-auto">
+                            <button className="w-full sm:w-auto bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2 px-5 rounded-md transition-colors text-sm flex items-center justify-center gap-2">
                                 Submit Post Link / Proof
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                             </button>
@@ -260,7 +245,7 @@ const JinnarChallenge = () => {
                     </div>
 
                     {/* Step 4: Compete Within Each Draw */}
-                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0">
                                 4
@@ -268,83 +253,50 @@ const JinnarChallenge = () => {
                             <h3 className="text-xl font-bold text-gray-900">Compete Within This Draw</h3>
                         </div>
 
-                        {/* Leaderboard Preview */}
-                        <div className="bg-gray-900 text-white rounded-xl p-5 mb-4 flex-1">
-                            <div className="flex justify-between items-start gap-2 mb-4">
-                                <h4 className="text-sm font-bold">
-                                    <ReadMore
-                                        text={activeDraw ? `Leaders: ${activeDraw.title}` : 'Leaderboard Preview'}
-                                        limit={40}
-                                        className="text-white"
-                                    />
-                                </h4>
-                                <Link to="/leaderboards" className="text-xs text-blue-400 hover:text-blue-300 whitespace-nowrap flex-shrink-0">
-                                    View Full Leaderboard →
-                                </Link>
-                            </div>
+                        <p className="text-gray-700 mb-4 text-sm">
+                            Every approved post earns points based on real engagement. Check the leaderboard above to see where you stand.
+                        </p>
 
-                            <div className="space-y-3">
-                                <div className="grid grid-cols-4 gap-3 text-xs text-gray-400 pb-2 border-b border-gray-700">
-                                    <div>Rank</div>
-                                    <div className="col-span-2">Name</div>
-                                    <div className="text-right">Points</div>
-                                </div>
-
-                                {loadingLeaderboard ? (
-                                    <div className="text-center py-4 text-gray-500 text-sm">Loading current leaders...</div>
-                                ) : leaderboardPreview.length === 0 ? (
-                                    <div className="text-center py-4 text-gray-500 text-sm">
-                                        No entries yet. Be the first!
-                                    </div>
-                                ) : (
-                                    leaderboardPreview.map((entry, index) => (
-                                        <div key={index} className="grid grid-cols-4 gap-3 items-center text-sm">
-                                            <div className="text-blue-400 font-bold"># {entry.rank || index + 1}</div>
-                                            <div className="col-span-2 flex items-center gap-2 min-w-0">
-                                                <span className="truncate">{entry.name || 'Anonymous user'}</span>
-                                                {/* Flag placeholder - api might not return country code yet */}
-                                                <span className="text-xs text-gray-500 flex-shrink-0">{entry.country || '🌐'}</span>
-                                            </div>
-                                            <div className="text-right font-bold">{entry.totalPoints?.toLocaleString()}</div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-
-                            <div className="mt-4 pt-3 border-t border-gray-700">
-                                <p className="text-xs text-gray-400">
-                                    <span className="font-semibold">Get Points:</span> Likes, views, shares + content quality.
-                                </p>
-                            </div>
+                        <div className="mb-4 flex-1">
+                            <p className="font-semibold text-gray-900 mb-2 text-sm">How Points Are Earned:</p>
+                            <ul className="space-y-1 ml-4 text-sm">
+                                <li className="text-gray-700">• Likes, views, and shares</li>
+                                <li className="text-gray-700">• Content quality scoring</li>
+                                <li className="text-gray-700">• Verified via platform APIs and AI validation</li>
+                            </ul>
                         </div>
 
-                        <p className="text-xs text-gray-600 mt-auto">
-                            <span className="inline-block mr-1">✓</span>
-                            Points are verified using platform APIs and AI validation tools.
-                        </p>
+                        <Link to="/leaderboards" className="mt-auto w-full sm:w-auto">
+                            <button className="w-full sm:w-auto bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2 px-5 rounded-md transition-colors text-sm flex items-center justify-center gap-2">
+                                View Full Leaderboard
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </Link>
                     </div>
                 </div>
 
                 {/* How Winners Are Selected */}
-                <div className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">How Winners Are Selected</h3>
+                <div className="mb-12 sm:mb-16">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">How Winners Are Selected</h3>
 
-                    <p className="text-lg font-semibold text-blue-800 mb-4">Your Content, Jinnar's Promotion</p>
+                    <p className="text-base sm:text-lg font-semibold text-blue-800 mb-4">Your Content, Jinnar's Promotion</p>
 
-                    <p className="text-gray-700 mb-6 max-w-2xl">
+                    <p className="text-gray-700 mb-6 max-w-2xl text-sm sm:text-base">
                         By participating, you earn Jinnar permission to feature approved videos in marketing.
                     </p>
 
-                    <ul className="space-y-2 mb-6 ml-4 max-w-xl">
+                    <ul className="space-y-2 mb-6 ml-4 max-w-xl text-sm sm:text-base">
                         <li className="text-gray-700">• Cash prize pool of {activeDraw?.prizePool ? format(activeDraw.prizePool) : format(10000) + '+'}</li>
                         <li className="text-gray-700">• Official Jinnar merchandise</li>
                         <li className="text-gray-700">• Public recognition on our socials</li>
                     </ul>
 
-                    <Link to="/winners">
-                        <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2.5 px-6 rounded-md transition-colors flex items-center gap-2">
+                    <Link to="/winners" className="inline-block w-full sm:w-auto">
+                        <button className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2.5 px-6 rounded-md transition-colors flex items-center justify-center gap-2">
                             View Prizes & Rewards
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
@@ -352,24 +304,24 @@ const JinnarChallenge = () => {
                 </div>
 
                 {/* Ready to Join the Next Draw */}
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 mb-12">
-                    <div className="flex items-center gap-2 mb-3">
-                        <span className="text-2xl">🎯</span>
-                        <h2 className="text-2xl font-bold text-gray-900">
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 sm:p-8 mb-10 sm:mb-12">
+                    <div className="flex items-center gap-2 mb-3 min-w-0">
+                        <span className="text-xl sm:text-2xl flex-shrink-0">🎯</span>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 min-w-0 truncate">
                             Ready to Join {activeDraw ? activeDraw.title : 'the Next Draw'}?
                         </h2>
                     </div>
-                    <p className="text-gray-700 mb-6">Create. Share. Compete. Win.</p>
-                    <div className="flex gap-3">
-                        <Link to="/upload">
-                            <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2.5 px-6 rounded-md transition-colors">
+                    <p className="text-gray-700 mb-6 text-sm sm:text-base">Create. Share. Compete. Win.</p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <Link to="/upload" className="w-full sm:w-auto">
+                            <button className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2.5 px-6 rounded-md transition-colors">
                                 Join Active Draw
                             </button>
                         </Link>
-                        <Link to="/upload">
-                            <button className="bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-6 rounded-md transition-colors flex items-center gap-2">
+                        <Link to="/upload" className="w-full sm:w-auto">
+                            <button className="w-full sm:w-auto bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-6 rounded-md transition-colors flex items-center justify-center gap-2">
                                 Upload Video Now
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                             </button>
@@ -378,29 +330,29 @@ const JinnarChallenge = () => {
                 </div>
 
                 {/* FAQ Preview - Static Data is fine here */}
-                <div className="bg-blue-50 rounded-2xl p-8">
+                <div className="bg-blue-50 rounded-2xl p-6 sm:p-8">
                     <div className="flex items-center gap-2 mb-2">
                         <span className="text-xl">📋</span>
-                        <h3 className="text-xl font-bold text-gray-900">FAQ Preview</h3>
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900">FAQ Preview</h3>
                     </div>
                     <p className="text-gray-700 mb-6 text-sm">Quick Questions</p>
 
                     <div className="space-y-3 mb-6">
                         {faqData.slice(0, 4).map((faq, index) => (
-                            <div key={faq.id} className="flex items-center gap-3 text-gray-700 text-sm">
-                                <span className={index % 2 === 0 ? "text-green-600" : "text-gray-400"}>
+                            <div key={faq.id} className="flex items-start gap-3 text-gray-700 text-sm">
+                                <span className={`flex-shrink-0 ${index % 2 === 0 ? "text-green-600" : "text-gray-400"}`}>
                                     {index % 2 === 0 ? "✓" : "○"}
                                 </span>
-                                <span>{faq.question}</span>
-                                {index % 2 === 0 && <span className="text-blue-600 text-xs">✓</span>}
+                                <span className="min-w-0">{faq.question}</span>
+                                {index % 2 === 0 && <span className="text-blue-600 text-xs flex-shrink-0">✓</span>}
                             </div>
                         ))}
                     </div>
 
-                    <Link to="/faq">
-                        <button className="bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-6 rounded-md transition-colors flex items-center gap-2 text-sm">
+                    <Link to="/faq" className="inline-block w-full sm:w-auto">
+                        <button className="w-full sm:w-auto bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-6 rounded-md transition-colors flex items-center justify-center gap-2 text-sm">
                             View Full FAQ
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>

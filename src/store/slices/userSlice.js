@@ -137,12 +137,14 @@ export const fetchCurrentUser = createAsyncThunk(
   'user/fetchMe',
   async (_, { rejectWithValue }) => {
     try {
-      // const response = await apiClient.get('/auth/me');
-      // return response.data.user;
-      console.log('/auth/me is currently disabled');
-      return null;
+      const response = await apiClient.get('/user/profile');
+      // API returns { profile: { ... } }
+      return response.data.profile || response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.error || error.response?.data?.message || error.message);
+      return rejectWithValue({
+        message: error.response?.data?.error || error.response?.data?.message || error.message,
+        status: error.response?.status,
+      });
     }
   }
 );
@@ -270,19 +272,20 @@ const userSlice = createSlice({
       })
       // Fetch Me
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-        // Only mark as authenticated if we have valid user data
+        // Merge full profile on top of whatever we already have (e.g. id/role from the JWT)
         if (action.payload && typeof action.payload === 'object') {
-          state.user = action.payload;
+          state.user = { ...state.user, ...action.payload };
           state.isAuthenticated = true;
-        } else {
-          state.user = null;
-          state.isAuthenticated = false;
         }
       })
-      .addCase(fetchCurrentUser.rejected, (state) => {
-        state.user = null;
-        state.isAuthenticated = false;
-        localStorage.removeItem('authToken');
+      .addCase(fetchCurrentUser.rejected, (state, action) => {
+        // Only a real auth failure (401/403) should log the user out;
+        // don't wipe the session on a transient network error.
+        if (action.payload?.status === 401 || action.payload?.status === 403) {
+          state.user = null;
+          state.isAuthenticated = false;
+          localStorage.removeItem('authToken');
+        }
       })
       // Verify User
       .addCase(verifyUser.pending, (state) => {

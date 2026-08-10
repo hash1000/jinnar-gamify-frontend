@@ -97,57 +97,97 @@ const Leaderboards = () => {
         <div className="min-h-screen bg-gray-50">
 
             {/* Hero Section */}
-            <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-12 px-6 relative overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-8 sm:py-12 px-4 sm:px-6 relative overflow-hidden">
                 {/* Decorative elements */}
-                <div className="absolute inset-0 opacity-10">
+                <div className="absolute inset-0 opacity-10 hidden sm:block">
                     <div className="absolute top-10 right-20 text-6xl">🏆</div>
                     <div className="absolute top-20 left-10 text-5xl">👑</div>
                     <div className="absolute bottom-10 right-1/4 text-4xl">⭐</div>
                 </div>
 
                 <div className="max-w-7xl mx-auto relative z-10">
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                    <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
                         <div>
-                            <h1 className="text-4xl font-bold mb-4">Jinnar Viral Leaderboard</h1>
-                            <p className="text-lg mb-6 opacity-90">
+                            <h1 className="text-2xl sm:text-4xl font-bold mb-3 sm:mb-4">Jinnar Viral Leaderboard</h1>
+                            <p className="text-base sm:text-lg mb-5 sm:mb-6 opacity-90">
                                 See who's leading each Draw — globally, by country, and by city.
                             </p>
-                            <div className="flex gap-3">
-                                <Link to="/challenge">
-                                    <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2.5 px-6 rounded-md transition-colors">
+                            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                                <Link to="/challenge" className="w-full sm:w-auto">
+                                    <button className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-2.5 px-6 rounded-md transition-colors">
                                         View Active Challenges
                                     </button>
                                 </Link>
-                                <Link to="/upload">
-                                    <button className="bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-6 rounded-md transition-colors flex items-center gap-2">
+                                <Link to="/upload" className="w-full sm:w-auto">
+                                    <button className="w-full sm:w-auto bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-6 rounded-md transition-colors flex items-center justify-center gap-2">
                                         Upload Video for Approval
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                         </svg>
                                     </button>
                                 </Link>
                             </div>
                         </div>
-                        <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl h-64 flex items-center justify-center">
-                            <span className="text-4xl">📊</span>
+                        {/* Top 3 Preview */}
+                        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 sm:p-5">
+                            <div className="flex justify-between items-start gap-3 mb-4">
+                                <h4 className="text-sm font-bold flex items-center gap-2 flex-shrink-0">
+                                    <span>🏆</span> Top Creators
+                                </h4>
+                                <span className="text-xs text-blue-200 truncate text-right" title={viewType === 'current' ? getSelectedDrawName() : 'All-Time'}>
+                                    {viewType === 'current' ? getSelectedDrawName() : 'All-Time'}
+                                </span>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-4 gap-2 sm:gap-3 text-xs text-blue-200 pb-2 border-b border-white/20">
+                                    <div>Rank</div>
+                                    <div className="col-span-2">Creator</div>
+                                    <div className="text-right">Points</div>
+                                </div>
+
+                                {loading ? (
+                                    <div className="text-center py-4 text-blue-200 text-sm">Loading leaders...</div>
+                                ) : leaderboard.length === 0 ? (
+                                    <div className="text-center py-4 text-blue-200 text-sm">
+                                        No rankings available yet.
+                                    </div>
+                                ) : (
+                                    leaderboard.slice(0, 3).map((entry, index) => (
+                                        <div key={entry.userId || index} className="grid grid-cols-4 gap-2 sm:gap-3 items-center text-sm">
+                                            <div className="font-bold flex items-center gap-1">
+                                                #{entry.rank || index + 1}
+                                                {index === 0 && <span>👑</span>}
+                                            </div>
+                                            <div className="col-span-2 flex items-center gap-2 min-w-0">
+                                                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                                    {entry.name ? entry.name.charAt(0).toUpperCase() : '?'}
+                                                </div>
+                                                <span className="truncate">{entry.name || 'Anonymous'}</span>
+                                            </div>
+                                            <div className="text-right font-bold">{entry.totalPoints?.toLocaleString() || 0}</div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
                 {/* Filters Bar */}
-                <div className="bg-white rounded-lg shadow-sm p-4 mb-6 flex flex-wrap gap-4 items-center justify-between">
+                <div className="bg-white rounded-lg shadow-sm p-4 mb-6 flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
                     <div className="flex gap-3 items-center flex-wrap">
                         {/* Draw Selector */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-red-500 text-xl">🔥</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-red-500 text-xl flex-shrink-0">🔥</span>
                             <select
                                 value={selectedDraw || ''}
                                 onChange={(e) => setSelectedDraw(e.target.value)}
-                                className="border border-gray-300 rounded-md px-3 py-2 text-sm font-medium"
+                                className="border border-gray-300 rounded-md px-3 py-2 text-sm font-medium min-w-0 max-w-[180px] sm:max-w-none"
                                 disabled={availableDraws.length === 0}
                             >
                                 {availableDraws.length === 0 && <option>Loading draws...</option>}
@@ -164,7 +204,7 @@ const Leaderboards = () => {
                             <button
                                 key={type}
                                 onClick={() => setFilterType(type)}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors capitalize ${filterType === type ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors capitalize ${filterType === type ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 {type}
@@ -176,14 +216,14 @@ const Leaderboards = () => {
 
                         <button
                             onClick={() => setViewType('current')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${viewType === 'current' ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors ${viewType === 'current' ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             Current Draw
                         </button>
                         <button
                             onClick={() => setViewType('all-time')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${viewType === 'all-time' ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors ${viewType === 'all-time' ? 'bg-blue-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             All-Time
@@ -191,13 +231,13 @@ const Leaderboards = () => {
                     </div>
 
                     {/* Search */}
-                    <div className="relative">
+                    <div className="relative w-full lg:w-64">
                         <input
                             type="text"
                             placeholder="Search by username"
                             value={searchUsername}
                             onChange={(e) => setSearchUsername(e.target.value)}
-                            className="border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm w-64"
+                            className="border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm w-full"
                         />
                         <button className="absolute right-2 top-1/2 -translate-y-1/2">
                             <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,30 +247,30 @@ const Leaderboards = () => {
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
 
                     {/* Left Column - Leaderboard Table */}
                     <div className="md:col-span-2">
 
                         {/* Top 3 Creators */}
-                        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+                            <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+                                <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
                                     <span>🏆</span> Top Creators
                                 </h2>
-                                <div className="flex gap-2">
-                                    <span className="text-sm text-gray-600">{viewType === 'current' ? getSelectedDrawName() : 'All-Time'}</span>
+                                <div className="flex gap-2 min-w-0">
+                                    <span className="text-sm text-gray-600 truncate">{viewType === 'current' ? getSelectedDrawName() : 'All-Time'}</span>
                                 </div>
                             </div>
 
                             {/* Leaderboard Table */}
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
+                            <div className="overflow-x-auto -mx-4 sm:mx-0">
+                                <table className="w-full min-w-[420px]">
                                     <thead className="bg-gray-50 border-b border-gray-200">
                                         <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Rank</th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Creator</th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Points</th>
+                                            <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-600">Rank</th>
+                                            <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-600">Creator</th>
+                                            <th className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-600">Points</th>
                                             {/* Additional columns can be added when API supports them */}
                                         </tr>
                                     </thead>
@@ -250,21 +290,21 @@ const Leaderboards = () => {
                                         ) : (
                                             leaderboard.map((entry, index) => (
                                                 <tr key={entry.userId || index} className="border-b border-gray-100 hover:bg-gray-50">
-                                                    <td className="px-4 py-3">
+                                                    <td className="px-3 sm:px-4 py-3">
                                                         <span className={`font-bold ${index < 3 ? 'text-blue-600 text-lg' : 'text-gray-700'}`}>
                                                             #{entry.rank || index + 1}
                                                         </span>
                                                         {index === 0 && <span className="ml-2">👑</span>}
                                                     </td>
-                                                    <td className="px-4 py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
+                                                    <td className="px-3 sm:px-4 py-3">
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
                                                                 {entry.name ? entry.name.charAt(0).toUpperCase() : '?'}
                                                             </div>
-                                                            <span className="font-medium text-gray-900">{entry.name || 'Anonymous'}</span>
+                                                            <span className="font-medium text-gray-900 truncate">{entry.name || 'Anonymous'}</span>
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 py-3 font-bold text-gray-900">
+                                                    <td className="px-3 sm:px-4 py-3 font-bold text-gray-900 whitespace-nowrap">
                                                         {entry.totalPoints?.toLocaleString() || 0}
                                                     </td>
                                                 </tr>
@@ -282,7 +322,7 @@ const Leaderboards = () => {
                     <div className="space-y-6">
 
                         {/* Your Position */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
+                        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                             <h3 className="font-bold text-gray-900 mb-4">Your Position</h3>
 
                             {loadingRank ? (
@@ -328,7 +368,7 @@ const Leaderboards = () => {
                         </div>
 
                         {/* Guidelines Info */}
-                        <div className="bg-blue-50 rounded-lg shadow-sm p-6">
+                        <div className="bg-blue-50 rounded-lg shadow-sm p-4 sm:p-6">
                             <h3 className="font-bold text-gray-900 mb-4">Fair Play Policy</h3>
                             <p className="text-sm text-gray-700 mb-4">
                                 Rankings are updated in real-time. We use AI and human review to ensure all points are earned legitimately.

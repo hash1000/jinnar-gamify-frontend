@@ -230,7 +230,6 @@ const Header = () => {
                                             user?.isAdmin) && (
                                                 <>
                                                     <div className="border-t border-gray-200 my-1" />
-                                                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Admin</div>
                                                     <Link to="/admin" onClick={() => setShowDropdown(false)} className="block px-4 py-2 text-sm text-blue-800 font-bold hover:bg-blue-50">🔐 Admin Dashboard</Link>
                                                 </>
                                             )}

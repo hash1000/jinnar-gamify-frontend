@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchCurrentUser } from './store/slices/userSlice';
 import Home from './pages/Home';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
@@ -44,7 +46,17 @@ import { Toaster } from 'react-hot-toast';
 // Must also be a descendant of CurrencyProvider — guaranteed since App wraps both
 const RouterLayout = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.user);
   const isAdminPage = location.pathname.startsWith('/admin') && location.pathname !== '/admin/login';
+
+  // Load the full profile (name, city, country, mobileNumber, role, ...) once we know
+  // we're authenticated — the JWT itself only carries { id, role }.
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchCurrentUser());
+    }
+  }, [isAuthenticated, dispatch]);
 
   return (
     <>

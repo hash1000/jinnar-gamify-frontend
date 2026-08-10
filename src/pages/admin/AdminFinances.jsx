@@ -62,12 +62,9 @@ const AdminFinances = () => {
                 });
             } else {
                 // Mock data as fallback for empty state
-                const mockLogs = [
-                    { id: '1', type: 'inflow', amount: 5000, description: 'Sponsorship Payment', date: new Date('2026-03-15T10:30:00Z').toLocaleString(), reference: 'INV-001' },
-                    { id: '2', type: 'outflow', amount: 1200, description: 'User Withdrawal', date: new Date('2026-03-14T15:20:00Z').toLocaleString(), reference: 'PAY-882' },
-                ];
+                const mockLogs = [];
                 setLogs(mockLogs);
-                setTotals({ inflow: 5000, outflow: 1200, balance: 3800 });
+                setTotals({ inflow: 0, outflow: 0, balance: 0 });
             }
         } catch (error) {
             console.error('Failed to load financial logs:', error);
