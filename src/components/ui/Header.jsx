@@ -224,9 +224,8 @@ const Header = () => {
                                         <Link to="/dashboard" onClick={() => setShowDropdown(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Dashboard</Link>
                                         <Link to="/dashboard" onClick={() => setShowDropdown(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Videos</Link>
                                         <Link to="/settings" onClick={() => setShowDropdown(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</Link>
-                                        {(user?.role?.toLowerCase() === 'superadmin' ||
-                                            user?.role?.toLowerCase() === 'super admin' ||
-                                            user?.role === 'admin' ||
+                                        {(user?.role?.toLowerCase().replace(/[_\s-]/g, '') === 'superadmin' ||
+                                            user?.role?.toLowerCase() === 'admin' ||
                                             user?.isAdmin) && (
                                                 <>
                                                     <div className="border-t border-gray-200 my-1" />

@@ -21,12 +21,15 @@ const AdminRoute = ({ children }) => {
     const hasValidUser = user && typeof user === 'object';
     const isAuthenticatedInRedux = isAuthenticated === true;
 
+    const normalizedRole = user?.role?.toLowerCase().replace(/[_\s-]/g, '');
+    const isAdmin = normalizedRole === 'superadmin' || normalizedRole === 'admin' || user?.isAdmin === true;
+
     console.log('🔐 AdminRoute Check:', {
         isAuthenticatedInRedux,
         hasValidToken,
         hasValidUser,
         userRole: user?.role,
-        isAdmin: user?.isAdmin,
+        isAdmin,
     });
 
     // If not authenticated, redirect to ADMIN login
@@ -40,8 +43,13 @@ const AdminRoute = ({ children }) => {
         return <Navigate to="/admin/login" replace />;
     }
 
-    // TEMPORARILY UNRESTRICTED: Allow all authenticated users to see admin for testing
-    console.log('✅ Admin access granted (UNRESTRICTED for testing)');
+    // If authenticated but not an admin, deny access
+    if (!isAdmin) {
+        console.warn('⚠️ Admin access denied - User does not have admin role');
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    console.log('✅ Admin access granted');
     return children;
 };
 
