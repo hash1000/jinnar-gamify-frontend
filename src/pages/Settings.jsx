@@ -1,16 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import userService from '../services/userService';
 import authService from '../services/authService';
 import { fetchCurrentUser } from '../store/slices/userSlice';
+import { resolveMediaUrl } from '../utils/format';
+
+const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
 
 const Settings = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const fileInputRef = useRef(null);
     const [activeTab, setActiveTab] = useState('profile');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+
+    // Profile picture state
+    const [profilePicture, setProfilePicture] = useState('');
+    const [avatarUploading, setAvatarUploading] = useState(false);
+    const [avatarProgress, setAvatarProgress] = useState(0);
 
     // Profile form state
     const [profileData, setProfileData] = useState({
@@ -58,6 +68,7 @@ const Settings = () => {
                 country: data.country || '',
                 mobileNumber: data.mobileNumber || ''
             });
+            setProfilePicture(data.profilePicture || '');
             setSelectedRole(data.role || 'buyer');
         } catch (error) {
             console.error('Failed to load profile:', error);
@@ -68,6 +79,40 @@ const Settings = () => {
     const showMessage = (type, text) => {
         setMessage({ type, text });
         setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+    };
+
+    // Handle profile picture selection + upload
+    const handleAvatarSelect = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = ''; // allow re-selecting the same file later
+        if (!file) return;
+
+        if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+            showMessage('error', 'Please choose a JPG, PNG, or GIF image.');
+            return;
+        }
+        if (file.size > MAX_AVATAR_SIZE) {
+            showMessage('error', 'Image must be smaller than 5MB.');
+            return;
+        }
+
+        setAvatarUploading(true);
+        setAvatarProgress(0);
+        try {
+            const result = await userService.uploadProfilePicture(file, setAvatarProgress);
+            const url = result?.file?.url || result?.url;
+            if (url) {
+                setProfilePicture(url);
+                showMessage('success', 'Profile picture updated!');
+                dispatch(fetchCurrentUser());
+            } else {
+                showMessage('error', 'Upload succeeded but no image URL was returned.');
+            }
+        } catch (error) {
+            showMessage('error', error.response?.data?.error || error.response?.data?.message || 'Failed to upload profile picture');
+        } finally {
+            setAvatarUploading(false);
+        }
     };
 
     // Handle profile update
@@ -204,6 +249,49 @@ const Settings = () => {
                         {activeTab === 'profile' && (
                             <div>
                                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Profile Information</h2>
+
+                                {/* Profile Picture */}
+                                <div className="flex items-center gap-4 sm:gap-6 mb-6">
+                                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+                                        <div className="w-full h-full rounded-full bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
+                                            {profilePicture ? (
+                                                <img
+                                                    src={resolveMediaUrl(profilePicture)}
+                                                    alt="Profile"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <svg className="w-10 h-10 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                        {avatarUploading && (
+                                            <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                                                <span className="text-white text-xs font-semibold">{avatarProgress}%</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/gif"
+                                            onChange={handleAvatarSelect}
+                                            className="hidden"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={avatarUploading}
+                                            className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {avatarUploading ? 'Uploading...' : profilePicture ? 'Change Photo' : 'Upload Photo'}
+                                        </button>
+                                        <p className="text-xs text-gray-500 mt-2">JPG, PNG or GIF. Max 5MB.</p>
+                                    </div>
+                                </div>
+
                                 <form onSubmit={handleProfileUpdate} className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">

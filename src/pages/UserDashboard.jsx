@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/userSlice';
 import viralService from '../services/viralService';
-import { formatDate } from '../utils/format';
+import { formatDate, resolveMediaUrl } from '../utils/format';
 
 const UserDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
@@ -139,8 +139,16 @@ const UserDashboard = () => {
                         <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:sticky lg:top-24">
                             <div className="text-center mb-6">
                                 <div className="relative inline-block mb-4">
-                                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center border-4 border-blue-100">
-                                        <span className="text-3xl sm:text-4xl">{getCountryFlag(user?.country)}</span>
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center border-4 border-blue-100 overflow-hidden">
+                                        {user?.profilePicture ? (
+                                            <img
+                                                src={resolveMediaUrl(user.profilePicture)}
+                                                alt={user?.name || 'Profile'}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <span className="text-3xl sm:text-4xl">{getCountryFlag(user?.country)}</span>
+                                        )}
                                     </div>
                                     {user?.verified && (
                                         <div className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white">

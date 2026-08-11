@@ -19,6 +19,20 @@ export const userService = {
         return response.data;
     },
 
+    // 2c. Upload profile picture
+    // POST /upload/profile-picture — form-data field: profilePicture (image)
+    uploadProfilePicture: async (file, onProgress) => {
+        const formData = new FormData();
+        formData.append('profilePicture', file);
+        const response = await apiClient.post('/upload/profile-picture', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: onProgress
+                ? (e) => onProgress(Math.round((e.loaded * 100) / e.total))
+                : undefined,
+        });
+        return response.data;
+    },
+
     // 3. Get public profile (no auth needed)
     getPublicProfile: async (userId) => {
         const response = await apiClient.get(`/user/public/${userId}`);

@@ -5,6 +5,7 @@ import { logout } from '../../store/slices/userSlice';
 import logo from '../../assets/images/jinnar-viral-logo.png';
 import { MenuIcon, CloseIcon } from './Icons';
 import { useCurrency, SUPPORTED_CURRENCIES } from '../../contexts/CurrencyContext';
+import { resolveMediaUrl } from '../../utils/format';
 
 // ─── Nav link sets ────────────────────────────────────────────────────────────
 
@@ -209,17 +210,32 @@ const Header = () => {
                             <div className="relative">
                                 <button
                                     onClick={() => setShowDropdown(!showDropdown)}
-                                    className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden flex-shrink-0"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
+                                    {user?.profilePicture ? (
+                                        <img src={resolveMediaUrl(user.profilePicture)} alt={user?.name || 'Profile'} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    )}
                                 </button>
                                 {showDropdown && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
-                                        <div className="px-4 py-2 border-b border-gray-200">
-                                            <p className="text-sm font-semibold text-gray-900">{user?.name || user?.email || 'User'}</p>
-                                            {user?.email && <p className="text-xs text-gray-500">{user.email}</p>}
+                                    <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
+                                        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 min-w-0">
+                                            <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                                {user?.profilePicture ? (
+                                                    <img src={resolveMediaUrl(user.profilePicture)} alt={user?.name || 'Profile'} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || user?.email || 'User'}</p>
+                                                {user?.email && <p className="text-xs text-gray-500 truncate" title={user.email}>{user.email}</p>}
+                                            </div>
                                         </div>
                                         <Link to="/dashboard" onClick={() => setShowDropdown(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Dashboard</Link>
                                         <Link to="/dashboard" onClick={() => setShowDropdown(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Videos</Link>
@@ -232,6 +248,7 @@ const Header = () => {
                                                     <Link to="/admin" onClick={() => setShowDropdown(false)} className="block px-4 py-2 text-sm text-blue-800 font-bold hover:bg-blue-50">🔐 Admin Dashboard</Link>
                                                 </>
                                             )}
+                                        <div className="border-t border-gray-200 my-1" />
                                         <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</button>
                                     </div>
                                 )}

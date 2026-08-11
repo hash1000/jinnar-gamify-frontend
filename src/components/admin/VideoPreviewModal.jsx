@@ -14,9 +14,22 @@ import toast from 'react-hot-toast';
  */
 const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
     const [reviewNotes, setReviewNotes] = useState('');
-    const [points, setPoints] = useState(submission?.points || 0);
+    // Empty string = "not manually set" — let the backend auto-calculate
+    // points from engagement instead of overriding with 0.
+    const [points, setPoints] = useState(submission?.points ? String(submission.points) : '');
+    const [engagement, setEngagement] = useState({
+        likes: submission?.engagement?.likes ?? 0,
+        comments: submission?.engagement?.comments ?? 0,
+        shares: submission?.engagement?.shares ?? 0,
+        saves: submission?.engagement?.saves ?? 0,
+        views: submission?.engagement?.views ?? 0,
+    });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const overlayRef = useRef(null);
+
+    const setEngagementField = (field, value) => {
+        setEngagement(prev => ({ ...prev, [field]: value }));
+    };
 
     // Close on backdrop click
     const handleBackdropClick = (e) => {
@@ -37,11 +50,23 @@ const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
         }
         try {
             setIsSubmitting(true);
-            const result = await adminService.reviewSubmission(submission._id, {
+            const payload = {
                 status,
                 reviewNotes: reviewNotes.trim(),
-                points: Number(points) || 0
-            });
+                engagement: {
+                    likes: Number(engagement.likes) || 0,
+                    comments: Number(engagement.comments) || 0,
+                    shares: Number(engagement.shares) || 0,
+                    saves: Number(engagement.saves) || 0,
+                    views: Number(engagement.views) || 0,
+                },
+            };
+            // Only send `points` if the admin actually typed a value —
+            // otherwise let the backend auto-calculate it from engagement.
+            if (points !== '') {
+                payload.points = Number(points) || 0;
+            }
+            const result = await adminService.reviewSubmission(submission._id, payload);
             toast.success(status === 'approved' ? '✅ Submission approved!' : '❌ Submission rejected.');
             onAction?.(result.data);
             onClose();
@@ -166,12 +191,50 @@ const VideoPreviewModal = ({ submission, baseUrl = '', onClose, onAction }) => {
                     <div className="px-6 pb-4 space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: '#94a3b8' }}>
-                                Assign Points
+                                Engagement Stats
+                            </label>
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                                {[
+                                    { key: 'likes', label: 'Likes' },
+                                    { key: 'comments', label: 'Comments' },
+                                    { key: 'shares', label: 'Shares' },
+                                    { key: 'saves', label: 'Saves' },
+                                    { key: 'views', label: 'Views' },
+                                ].map(field => (
+                                    <div key={field.key}>
+                                        <label className="block text-xs mb-1" style={{ color: '#64748b' }}>
+                                            {field.label}
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={engagement[field.key]}
+                                            onChange={e => setEngagementField(field.key, e.target.value)}
+                                            className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all"
+                                            style={{
+                                                background: 'rgba(255,255,255,0.06)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                color: '#e2e8f0',
+                                            }}
+                                            onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
+                                            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-xs mt-2" style={{ color: '#475569' }}>
+                                Points = likes×1 + comments×2 + shares×3 + saves×2 + views×0.1 — auto-calculated from these stats, or overridden by "Assign Points" below if set.
+                            </p>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-2" style={{ color: '#94a3b8' }}>
+                                Assign Points <span className="text-xs" style={{ color: '#475569' }}>(optional — overrides the calculated total above)</span>
                             </label>
                             <input
                                 type="number"
                                 value={points}
                                 onChange={e => setPoints(e.target.value)}
+                                placeholder="Leave blank to auto-calculate from engagement stats"
                                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                                 style={{
                                     background: 'rgba(255,255,255,0.06)',

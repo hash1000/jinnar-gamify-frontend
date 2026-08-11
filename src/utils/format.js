@@ -92,11 +92,27 @@ export const truncateText = (text, maxLength = 100) => {
     return text.substring(0, maxLength) + '...';
 };
 
+/**
+ * Resolve a backend-relative media URL (e.g. "/api/files/profilePictures/xxx.jpg")
+ * into a full absolute URL using VITE_API_URL as the server root.
+ * Absolute URLs (http/https) and empty values are passed through unchanged.
+ * @param {string} url - Relative or absolute media URL
+ * @returns {string} Absolute URL, or '' if url is falsy
+ */
+export const resolveMediaUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    const apiBase = import.meta.env.VITE_API_URL || '';
+    const serverRoot = apiBase.replace(/\/api$/, '');
+    return `${serverRoot}${url}`;
+};
+
 export default {
     formatNumber,
     formatCompactNumber,
     formatFileSize,
     formatDate,
     formatCurrency,
-    truncateText
+    truncateText,
+    resolveMediaUrl
 };
