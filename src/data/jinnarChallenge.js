@@ -61,9 +61,9 @@ export const challengeData = {
       title: "Draw 3 - East Africa",
       cta: "View Leaderboards",
       entries: [
-        { rank: 1, name: "Joseph M.", country: "Kenya", flag: "🇰🇪", points: 12900 },
-        { rank: 2, name: "Maria N.", country: "Tanzania", flag: "🇹🇿", points: 11540 },
-        { rank: 3, name: "Gift M.", country: "Uganda", flag: "🇺🇬", points: 10200 }
+        // { rank: 1, name: "Joseph M.", country: "Kenya", flag: "🇰🇪", points: 12900 },
+        // { rank: 2, name: "Maria N.", country: "Tanzania", flag: "🇹🇿", points: 11540 },
+        // { rank: 3, name: "Gift M.", country: "Uganda", flag: "🇺🇬", points: 10200 }
       ],
       pointsInfo: "Points ≈ 2,000 likes + 300 ≈ 2,600 points",
       note: "Points are verified using platform APIs and AI validation tools."

@@ -102,14 +102,14 @@ export const homeData = {
     // Global Leaderboard (from API)
     globalLeaderboard: {
         weekly: [
-            { rank: 1, name: "Joseph M.", country: "Kenya", flag: "🇰🇪", points: 12900, avatar: "/avatar1.jpg" },
-            { rank: 2, name: "Maria N.", country: "Tanzania", flag: "🇹🇿", points: 11540, avatar: "/avatar2.jpg" },
-            { rank: 3, name: "Gift M.", country: "Uganda", flag: "🇺🇬", points: 10200, avatar: "/avatar3.jpg" }
+            // { rank: 1, name: "Joseph M.", country: "Kenya", flag: "🇰🇪", points: 12900, avatar: "/avatar1.jpg" },
+            // { rank: 2, name: "Maria N.", country: "Tanzania", flag: "🇹🇿", points: 11540, avatar: "/avatar2.jpg" },
+            // { rank: 3, name: "Gift M.", country: "Uganda", flag: "🇺🇬", points: 10200, avatar: "/avatar3.jpg" }
         ],
         monthly: [
-            { rank: 1, name: "Joseph M.", country: "Kenya", flag: "🇰🇪", points: 45200, avatar: "/avatar1.jpg" },
-            { rank: 2, name: "Lynda G.", country: "Tanzania", flag: "🇹🇿", points: 38900, avatar: "/avatar2.jpg" },
-            { rank: 3, name: "Gift M.", country: "Uganda", flag: "🇺🇬", points: 35100, avatar: "/avatar3.jpg" }
+            // { rank: 1, name: "Joseph M.", country: "Kenya", flag: "🇰🇪", points: 45200, avatar: "/avatar1.jpg" },
+            // { rank: 2, name: "Lynda G.", country: "Tanzania", flag: "🇹🇿", points: 38900, avatar: "/avatar2.jpg" },
+            // { rank: 3, name: "Gift M.", country: "Uganda", flag: "🇺🇬", points: 35100, avatar: "/avatar3.jpg" }
         ]
     },
 
