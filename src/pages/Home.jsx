@@ -548,26 +548,35 @@ const Home = () => {
                                     </Link>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-4">
-                                    {homeData.regionalLeaderboard.topCreators.map((creator) => (
-                                        <div key={creator.rank} className="text-center">
-                                            <div className="relative bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg h-40 flex items-center justify-center mb-2">
-                                                <div className="absolute top-2 left-2 bg-blue-900 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs">
-                                                    #{creator.rank}
+                                {loading.leaderboard ? (
+                                    <div className="text-center py-8 text-gray-500 text-sm">Loading regional leaderboard...</div>
+                                ) : regionalLeaderboard.length > 0 ? (
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {regionalLeaderboard.map((entry) => {
+                                            const creator = mapLeaderboardEntry(entry);
+                                            return (
+                                                <div key={creator.rank} className="text-center">
+                                                    <div className="relative bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg h-40 flex items-center justify-center mb-2">
+                                                        <div className="absolute top-2 left-2 bg-blue-900 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs">
+                                                            #{creator.rank}
+                                                        </div>
+                                                        <p className="text-gray-400 text-xs">Creator Photo</p>
+                                                    </div>
+                                                    <div className="flex items-center justify-center gap-1 mb-1">
+                                                        <div className="w-5 h-5 bg-blue-900 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                                            #{creator.rank}
+                                                        </div>
+                                                        <span className="font-semibold text-xs">{creator.name}</span>
+                                                        <span className="text-xs">{creator.flag}</span>
+                                                    </div>
+                                                    <div className="text-xs font-bold text-gray-900">{creator.points.toLocaleString()} points</div>
                                                 </div>
-                                                <p className="text-gray-400 text-xs">Creator Photo</p>
-                                            </div>
-                                            <div className="flex items-center justify-center gap-1 mb-1">
-                                                <div className="w-5 h-5 bg-blue-900 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                                                    #{creator.rank}
-                                                </div>
-                                                <span className="font-semibold text-xs">{creator.name}</span>
-                                                <span className="text-xs">{creator.flag}</span>
-                                            </div>
-                                            <div className="text-xs font-bold text-gray-900">{creator.points.toLocaleString()} points</div>
-                                        </div>
-                                    ))}
-                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-gray-500 text-sm">No regional leaderboard data available</div>
+                                )}
 
                                 <div className="mt-4 text-center">
                                     <Link to="/rules">
