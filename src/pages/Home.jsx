@@ -5,6 +5,7 @@ import viralService from '../services/viralService';
 import { useToast } from '../contexts/ToastContext';
 import homeData from '../data/home'; // Keep for fallback data (rules, status indicators)
 import { useCurrency } from '../contexts/CurrencyContext';
+import { resolveMediaUrl } from '../utils/format';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -227,7 +228,7 @@ const Home = () => {
         country: entry.country || entry.userId?.country || 'Unknown',
         flag: getCountryFlag(entry.country || entry.userId?.country),
         points: entry.totalPoints || entry.points || 0,
-        avatar: entry.profilePicture || entry.userId?.profilePicture || '/default-avatar.jpg'
+        avatar: entry.profilePicture || entry.userId?.profilePicture || null
     });
 
     // Helper to get country flag emoji
@@ -504,7 +505,15 @@ const Home = () => {
                                                         </td>
                                                         <td className="px-4 py-3">
                                                             <div className="flex items-center gap-2">
-                                                                <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
+                                                                <div className="w-6 h-6 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
+                                                                    {mappedEntry.avatar && (
+                                                                        <img
+                                                                            src={resolveMediaUrl(mappedEntry.avatar)}
+                                                                            alt={mappedEntry.name}
+                                                                            className="w-full h-full object-cover"
+                                                                        />
+                                                                    )}
+                                                                </div>
                                                                 <span className="font-medium">{mappedEntry.name}</span>
                                                                 <span className="text-xs">{mappedEntry.flag}</span>
                                                             </div>
@@ -556,11 +565,19 @@ const Home = () => {
                                             const creator = mapLeaderboardEntry(entry);
                                             return (
                                                 <div key={creator.rank} className="text-center">
-                                                    <div className="relative bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg h-40 flex items-center justify-center mb-2">
-                                                        <div className="absolute top-2 left-2 bg-blue-900 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs">
+                                                    <div className="relative bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg h-40 flex items-center justify-center mb-2 overflow-hidden">
+                                                        <div className="absolute top-2 left-2 bg-blue-900 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs z-10">
                                                             #{creator.rank}
                                                         </div>
-                                                        <p className="text-gray-400 text-xs">Creator Photo</p>
+                                                        {creator.avatar ? (
+                                                            <img
+                                                                src={resolveMediaUrl(creator.avatar)}
+                                                                alt={creator.name}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <p className="text-gray-400 text-xs">Creator Photo</p>
+                                                        )}
                                                     </div>
                                                     <div className="flex items-center justify-center gap-1 mb-1">
                                                         <div className="w-5 h-5 bg-blue-900 text-white rounded-full flex items-center justify-center text-xs font-bold">

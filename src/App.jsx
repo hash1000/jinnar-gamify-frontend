@@ -31,7 +31,6 @@ import DrawParticipants from './pages/admin/DrawParticipants';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminUsers from './pages/admin/AdminUsers';
-import AdminFinances from './pages/admin/AdminFinances';
 import AdminAnnouncements from './pages/admin/AdminAnnouncements';
 import Header from './components/ui/Header';
 import Footer from './components/ui/Footer';
@@ -91,7 +90,6 @@ const RouterLayout = () => {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
-        <Route path="/admin/finances" element={<AdminRoute><AdminFinances /></AdminRoute>} />
         <Route path="/admin/draws" element={<AdminRoute><AdminDraws /></AdminRoute>} />
         <Route path="/admin/draws/create" element={<AdminRoute><CreateDraw /></AdminRoute>} />
         <Route path="/admin/draws/edit/:id" element={<AdminRoute><EditDraw /></AdminRoute>} />

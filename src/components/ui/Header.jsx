@@ -15,6 +15,7 @@ const userNavLinks = [
     { path: '/rules',         label: 'Rules'           },
     { path: '/announcements', label: 'Announcements'   },
     { path: '/faq',           label: 'FAQ'             },
+    { path: '/media',         label: 'Highlights'      },
 ];
 
 const adminNavLinks = [
@@ -22,7 +23,6 @@ const adminNavLinks = [
     { path: '/admin/draws',         label: 'Draws'         },
     { path: '/admin/submissions',   label: 'Submissions'   },
     { path: '/admin/users',         label: 'Users'         },
-    { path: '/admin/finances',      label: 'Finances'      },
     { path: '/admin/announcements', label: 'Announcements' },
 ];
 

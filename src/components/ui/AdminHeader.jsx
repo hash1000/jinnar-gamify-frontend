@@ -9,7 +9,6 @@ const adminNavLinks = [
     { path: '/admin/draws',        label: '🎯 Draws'                         },
     { path: '/admin/submissions',  label: '📋 Submissions'                   },
     { path: '/admin/users',        label: '👥 Users'                         },
-    { path: '/admin/finances',     label: '💰 Finances'                      },
     { path: '/admin/announcements',label: '📢 Announcements'                 },
 ];
 

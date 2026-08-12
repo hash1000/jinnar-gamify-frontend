@@ -9,8 +9,7 @@ import {
     ChevronRightIcon,
     CalendarIcon,
     CurrencyDollarIcon,
-    UserGroupIcon,
-    PresentationChartLineIcon
+    UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { useCurrency } from '../../contexts/CurrencyContext';
 
@@ -61,14 +60,6 @@ const AdminDashboard = () => {
 
     const adminSections = [
         {
-            title: 'Global Finances',
-            description: 'Track inflow, outflow and portal revenue logs',
-            icon: <PresentationChartLineIcon className="w-8 h-8 text-indigo-600" />,
-            link: '/admin/finances',
-            color: 'bg-indigo-50',
-            borderColor: 'border-indigo-200'
-        },
-        {
             title: 'User Management',
             description: 'Approve new participants or suspend accounts',
             icon: <UserGroupIcon className="w-8 h-8 text-blue-600" />,
@@ -114,14 +105,7 @@ const AdminDashboard = () => {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                    <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-gray-100 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-[4rem] opacity-50"></div>
-                        <p className="text-sm text-gray-400 font-bold uppercase tracking-wider mb-1">Financial Inflow</p>
-                        <h3 className="text-3xl font-black text-gray-900">{loading ? '...' : format(stats.totalRevenue)}</h3>
-                        <div className="mt-4 flex items-center text-xs font-bold text-green-600 bg-green-50 w-fit px-2 py-1 rounded-full">
-                            ↑ 12.5% this month
-                        </div>
-                    </div>
+                    
                     <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-gray-100 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-50 rounded-bl-[4rem] opacity-50"></div>
                         <p className="text-sm text-gray-400 font-bold uppercase tracking-wider mb-1">Verified Users</p>
